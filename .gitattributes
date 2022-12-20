@@ -1,1 +1,5 @@
+Yolov5TrainingOutputs/yolov5m_35ep_syntheticAndReal/weights/best.pt filter=lfs diff=lfs merge=lfs -text
+Yolov5TrainingOutputs/yolov5m_35ep_syntheticAndReal/weights/last.pt filter=lfs diff=lfs merge=lfs -text
+Yolov5TrainingOutputs/yolov5m_calibrateddataset_60ep_syntheticOnly/weights/best.pt filter=lfs diff=lfs merge=lfs -text
+Yolov5TrainingOutputs/yolov5m_calibrateddataset_60ep_syntheticOnly/weights/last.pt filter=lfs diff=lfs merge=lfs -text
 *.pt filter=lfs diff=lfs merge=lfs -text
