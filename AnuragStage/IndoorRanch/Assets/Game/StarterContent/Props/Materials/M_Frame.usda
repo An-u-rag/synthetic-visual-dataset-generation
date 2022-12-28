@@ -1,0 +1,72 @@
+#usda 1.0
+(
+    defaultPrim = "M_Frame"
+    upAxis = "Z"
+)
+
+def Material "M_Frame" (
+    assetInfo = {
+        asset identifier = @../../../../../../anuragparcha/Desktop/TestUSD/USDA/Assets/Game/StarterContent/Props/Materials/M_Frame.usda@
+        string name = "M_Frame"
+    }
+)
+{
+    token inputs:stPrimvarName = "st"
+    token outputs:surface.connect = </M_Frame/SurfaceShader.outputs:surface>
+    token outputs:unreal:surface.connect = </M_Frame/UnrealShader.outputs:out>
+
+    def Shader "UnrealShader"
+    {
+        uniform token info:implementationSource = "sourceAsset"
+        uniform asset info:unreal:sourceAsset = @/Game/StarterContent/Props/Materials/M_Frame.M_Frame@
+        token outputs:out
+    }
+
+    def Shader "SurfaceShader"
+    {
+        uniform token info:id = "UsdPreviewSurface"
+        float inputs:ambientOcclusion = 1
+        float inputs:anisotropy = 0
+        color3f inputs:diffuseColor.connect = </M_Frame/diffuseTexture.outputs:rgb>
+        float inputs:metallic = 1
+        normal3f inputs:normal.connect = </M_Frame/normalTexture.outputs:rgb>
+        float inputs:roughness.connect = </M_Frame/roughnessTexture.outputs:r>
+        float inputs:specular = 0.5019608
+        token outputs:surface
+    }
+
+    def Shader "PrimvarReader"
+    {
+        uniform token info:id = "UsdPrimvarReader_float2"
+        string inputs:varname.connect = </M_Frame.inputs:stPrimvarName>
+        token outputs:result
+    }
+
+    def Shader "diffuseTexture"
+    {
+        uniform token info:id = "UsdUVTexture"
+        float4 inputs:fallback = (0, 0, 0, 1)
+        asset inputs:file = @Textures/Game_StarterContent_Props_Materials_M_Frame_BaseColor.png@
+        float2 inputs:st.connect = </M_Frame/PrimvarReader.outputs:result>
+        color3f outputs:rgb
+    }
+
+    def Shader "roughnessTexture"
+    {
+        uniform token info:id = "UsdUVTexture"
+        float4 inputs:fallback = (0.5, 0.5, 0.5, 1)
+        asset inputs:file = @Textures/Game_StarterContent_Props_Materials_M_Frame_Roughness.png@
+        float2 inputs:st.connect = </M_Frame/PrimvarReader.outputs:result>
+        float outputs:r
+    }
+
+    def Shader "normalTexture"
+    {
+        uniform token info:id = "UsdUVTexture"
+        float4 inputs:fallback = (0, 1, 0, 1)
+        asset inputs:file = @Textures/Game_StarterContent_Props_Materials_M_Frame_Normal.png@
+        float2 inputs:st.connect = </M_Frame/PrimvarReader.outputs:result>
+        normal3f outputs:rgb
+    }
+}
+

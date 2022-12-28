@@ -1,0 +1,55 @@
+mdl 1.6;
+
+import ::math::*;
+import ::state::*;
+import ::tex::*;
+import ::anno::*;
+import ::scene::*;
+using .::OmniUe4Function import *;
+using .::OmniUe4Base import *;
+
+export annotation sampler_color();
+export annotation sampler_normal();
+export annotation sampler_grayscale();
+export annotation sampler_alpha();
+export annotation sampler_masks();
+export annotation sampler_distancefield();
+export annotation dither_masked_off();
+export annotation world_space_normal();
+
+export material BasicShapeMaterial(
+	float4 Color = float4(1.0,1.0,1.0,1.0)
+	[[
+		anno::display_name("Color"),
+		anno::ui_order(32)
+	]],
+	float Roughness = 0.6407
+	[[
+		anno::display_name("Roughness"),
+		anno::ui_order(32)
+	]])
+ = 
+	let {
+	float3 WorldPositionOffset_mdl = float3(0.0,0.0,0.0);
+
+
+	float3 Normal_mdl = float3(0.0,0.0,1.0);
+
+	float3 EmissiveColor_mdl = float3(0.0,0.0,0.0);
+	float OpacityMask_mdl = 1.0;
+	float3 BaseColor_mdl = float3(Color.x,Color.y,Color.z);
+	float Metallic_mdl = 0.0;
+	float Specular_mdl = 0.5;
+	float Roughness_mdl = Roughness;
+
+	} in
+		::OmniUe4Base(
+			base_color: BaseColor_mdl,
+			metallic: Metallic_mdl,
+			roughness: Roughness_mdl,
+			specular: Specular_mdl,
+			normal: Normal_mdl,
+			opacity: OpacityMask_mdl,
+			emissive_color: EmissiveColor_mdl,
+			displacement: WorldPositionOffset_mdl,
+			two_sided: false);

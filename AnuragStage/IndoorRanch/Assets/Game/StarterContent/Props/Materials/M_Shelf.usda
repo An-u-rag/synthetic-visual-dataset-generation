@@ -1,0 +1,90 @@
+#usda 1.0
+(
+    defaultPrim = "M_Shelf"
+    upAxis = "Z"
+)
+
+def Material "M_Shelf" (
+    assetInfo = {
+        asset identifier = @../../../../../../anuragparcha/Desktop/TestUSD/USDA/Assets/Game/StarterContent/Props/Materials/M_Shelf.usda@
+        string name = "M_Shelf"
+    }
+)
+{
+    token inputs:stPrimvarName = "st"
+    token outputs:surface.connect = </M_Shelf/SurfaceShader.outputs:surface>
+    token outputs:unreal:surface.connect = </M_Shelf/UnrealShader.outputs:out>
+
+    def Shader "UnrealShader"
+    {
+        uniform token info:implementationSource = "sourceAsset"
+        uniform asset info:unreal:sourceAsset = @/Game/StarterContent/Props/Materials/M_Shelf.M_Shelf@
+        token outputs:out
+    }
+
+    def Shader "SurfaceShader"
+    {
+        uniform token info:id = "UsdPreviewSurface"
+        float inputs:ambientOcclusion.connect = </M_Shelf/ambientOcclusionTexture.outputs:r>
+        float inputs:anisotropy = 0
+        color3f inputs:diffuseColor.connect = </M_Shelf/diffuseTexture.outputs:rgb>
+        float inputs:metallic.connect = </M_Shelf/metallicTexture.outputs:r>
+        normal3f inputs:normal.connect = </M_Shelf/normalTexture.outputs:rgb>
+        float inputs:roughness.connect = </M_Shelf/roughnessTexture.outputs:r>
+        float inputs:specular = 0.5019608
+        token outputs:surface
+    }
+
+    def Shader "PrimvarReader"
+    {
+        uniform token info:id = "UsdPrimvarReader_float2"
+        string inputs:varname.connect = </M_Shelf.inputs:stPrimvarName>
+        token outputs:result
+    }
+
+    def Shader "diffuseTexture"
+    {
+        uniform token info:id = "UsdUVTexture"
+        float4 inputs:fallback = (0, 0, 0, 1)
+        asset inputs:file = @Textures/Game_StarterContent_Props_Materials_M_Shelf_BaseColor.png@
+        float2 inputs:st.connect = </M_Shelf/PrimvarReader.outputs:result>
+        color3f outputs:rgb
+    }
+
+    def Shader "metallicTexture"
+    {
+        uniform token info:id = "UsdUVTexture"
+        float4 inputs:fallback = (0, 0, 0, 1)
+        asset inputs:file = @Textures/Game_StarterContent_Props_Materials_M_Shelf_Metallic.png@
+        float2 inputs:st.connect = </M_Shelf/PrimvarReader.outputs:result>
+        float outputs:r
+    }
+
+    def Shader "roughnessTexture"
+    {
+        uniform token info:id = "UsdUVTexture"
+        float4 inputs:fallback = (0.5, 0.5, 0.5, 1)
+        asset inputs:file = @Textures/Game_StarterContent_Props_Materials_M_Shelf_Roughness.png@
+        float2 inputs:st.connect = </M_Shelf/PrimvarReader.outputs:result>
+        float outputs:r
+    }
+
+    def Shader "normalTexture"
+    {
+        uniform token info:id = "UsdUVTexture"
+        float4 inputs:fallback = (0, 1, 0, 1)
+        asset inputs:file = @Textures/Game_StarterContent_Props_Materials_M_Shelf_Normal.png@
+        float2 inputs:st.connect = </M_Shelf/PrimvarReader.outputs:result>
+        normal3f outputs:rgb
+    }
+
+    def Shader "ambientOcclusionTexture"
+    {
+        uniform token info:id = "UsdUVTexture"
+        float4 inputs:fallback = (1, 1, 1, 1)
+        asset inputs:file = @Textures/Game_StarterContent_Props_Materials_M_Shelf_AmbientOcclusion.png@
+        float2 inputs:st.connect = </M_Shelf/PrimvarReader.outputs:result>
+        float outputs:r
+    }
+}
+

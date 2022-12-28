@@ -1,0 +1,63 @@
+#usda 1.0
+(
+    defaultPrim = "S_Buffelgrass_tmjhcayia_Var1_lod1"
+    metersPerUnit = 0.009999999776482582
+    upAxis = "Z"
+)
+
+def "S_Buffelgrass_tmjhcayia_Var1_lod1" (
+    assetInfo = {
+        asset identifier = @../../../../../../anuragparcha/Desktop/TestUSD/USDA/Assets/Game/Megascans/3D_Plants/Buffelgrass_tmjhcayia/S_Buffelgrass_tmjhcayia_Var1_lod1.usda@
+        string name = "S_Buffelgrass_tmjhcayia_Var1_lod1"
+    }
+    prepend payload = @S_Buffelgrass_tmjhcayia_Var1_lod1_payload.usda@
+)
+{
+    over "LOD0" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        rel material:binding = </S_Buffelgrass_tmjhcayia_Var1_lod1/Materials/MI_Buffelgrass_tmjhcayia_2K>
+        custom string unrealMaterial = "/Game/Megascans/3D_Plants/Buffelgrass_tmjhcayia/MI_Buffelgrass_tmjhcayia_2K.MI_Buffelgrass_tmjhcayia_2K"
+    }
+
+    over "LOD1" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        rel material:binding = </S_Buffelgrass_tmjhcayia_Var1_lod1/Materials/MI_Buffelgrass_tmjhcayia_2K>
+        custom string unrealMaterial = "/Game/Megascans/3D_Plants/Buffelgrass_tmjhcayia/MI_Buffelgrass_tmjhcayia_2K.MI_Buffelgrass_tmjhcayia_2K"
+    }
+
+    over "LOD2" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        rel material:binding = </S_Buffelgrass_tmjhcayia_Var1_lod1/Materials/MI_Buffelgrass_tmjhcayia_2K>
+        custom string unrealMaterial = "/Game/Megascans/3D_Plants/Buffelgrass_tmjhcayia/MI_Buffelgrass_tmjhcayia_2K.MI_Buffelgrass_tmjhcayia_2K"
+    }
+
+    over "LOD3" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        rel material:binding = </S_Buffelgrass_tmjhcayia_Var1_lod1/Materials/MI_Buffelgrass_tmjhcayia_Billboard_2K>
+        custom string unrealMaterial = "/Game/Megascans/3D_Plants/Buffelgrass_tmjhcayia/MI_Buffelgrass_tmjhcayia_Billboard_2K.MI_Buffelgrass_tmjhcayia_Billboard_2K"
+    }
+
+    def Scope "Materials"
+    {
+        def Material "MI_Buffelgrass_tmjhcayia_2K" (
+            prepend references = @MI_Buffelgrass_tmjhcayia_2K.usda@
+        )
+        {
+        }
+
+        def Material "MI_Buffelgrass_tmjhcayia_Billboard_2K" (
+            prepend references = @MI_Buffelgrass_tmjhcayia_Billboard_2K.usda@
+        )
+        {
+        }
+    }
+}
+

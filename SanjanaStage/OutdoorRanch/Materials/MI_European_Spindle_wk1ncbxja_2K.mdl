@@ -1,0 +1,149 @@
+mdl 1.6;
+
+import ::math::*;
+import ::state::*;
+import ::tex::*;
+import ::anno::*;
+import ::scene::*;
+using .::OmniUe4Function import *;
+using .::OmniUe4Subsurface import *;
+
+export annotation sampler_color();
+export annotation sampler_normal();
+export annotation sampler_grayscale();
+export annotation sampler_alpha();
+export annotation sampler_masks();
+export annotation sampler_distancefield();
+export annotation dither_masked_off();
+export annotation world_space_normal();
+
+export material MI_European_Spindle_wk1ncbxja_2K(
+	uniform texture_2d Normal = texture_2d("./Textures/Placeholder_Normal.png",::tex::gamma_linear)
+	[[
+		anno::display_name("Normal"),
+		anno::ui_order(2),
+		anno::in_group("01- Input Textures"),
+		sampler_normal()
+	]],
+	float NormalIntensity = 1.0
+	[[
+		anno::display_name("Normal Intensity"),
+		anno::ui_order(32),
+		anno::in_group("05 - Normal")
+	]],
+	float ColorVariation = 0.0
+	[[
+		anno::display_name("Color Variation"),
+		anno::ui_order(2),
+		anno::in_group("02 - Albedo")
+	]],
+	int NumberInstances = 0
+	[[
+		anno::hidden()
+	]],
+	uniform texture_2d Albedo = texture_2d("./Textures/DefaultDiffuse.png",::tex::gamma_srgb)
+	[[
+		anno::display_name("Albedo"),
+		anno::in_group("01- Input Textures"),
+		sampler_color()
+	]],
+	float4 ColorOverlay = float4(0.5,0.5,0.5,1.0)
+	[[
+		anno::display_name("Color Overlay"),
+		anno::ui_order(32),
+		anno::in_group("02 - Albedo")
+	]],
+	float OverlayIntensity = 1.0
+	[[
+		anno::display_name("Overlay Intensity"),
+		anno::ui_order(1),
+		anno::in_group("02 - Albedo"),
+		anno::soft_range(0.0, 1.5)
+	]],
+	uniform texture_2d ORT = texture_2d("./Textures/WhitePlaceholder.png",::tex::gamma_linear)
+	[[
+		anno::display_name("ORT"),
+		anno::ui_order(3),
+		anno::in_group("01- Input Textures"),
+		sampler_color()
+	]],
+	float RoughnessIntensity = 1.0
+	[[
+		anno::display_name("Roughness Intensity"),
+		anno::ui_order(32),
+		anno::in_group("03- Roughness")
+	]],
+	float OpacityIntensity = 1.0
+	[[
+		anno::display_name("Opacity Intensity"),
+		anno::ui_order(32),
+		anno::in_group("04 - Opacity")
+	]],
+	int MaxTexCoordIndex = 3
+	[[
+		anno::hidden()
+	]])
+[[
+	dither_masked_off(),
+	distill_off()
+]]
+ = 
+	let {
+	float3 WorldPositionOffset_mdl = float3(0.0,0.0,0.0);
+	float2 CustomizedUV0_mdl = float2(state::texture_coordinate(math::min(0,MaxTexCoordIndex)).x,1.0-state::texture_coordinate(math::min(0,MaxTexCoordIndex)).y);
+
+	float4 Local0 = ::unpack_normal_map(tex::lookup_float4(Normal,float2(CustomizedUV0_mdl.x,1.0-CustomizedUV0_mdl.y),tex::wrap_repeat,tex::wrap_repeat));
+	float Local1 = (1.0 - NormalIntensity);
+	float3 Local2 = math::lerp(float3(Local0.x,Local0.y,Local0.z),float3(0.0,0.0,1.0),Local1);
+
+	float3 Normal_mdl = Local2;
+
+	float3 Local3 = (float3(100.0,10.0,1.0) * ::per_instance_random(texture_2d("./Textures/PerlinNoiseGradientTexture.png",tex::gamma_linear), NumberInstances));
+	float3 Local4 = (::object_world_position(true) * 0.01);
+	float3 Local5 = (Local3 + Local4);
+	float3 Local6 = math::frac(Local5);
+	float Local7 = math::dot(float2(Local6.x,Local6.y), float2(Local6.y,Local6.z));
+	float Local8 = (-0.5 + Local7);
+	float Local9 = (Local8 * 2.0);
+	float Local10 = (ColorVariation * Local9);
+	float3 Local11 = math::normalize(Local6);
+	float3 Local12 = (Local10 * Local11);
+	float4 Local13 = tex::lookup_float4(Albedo,float2(CustomizedUV0_mdl.x,1.0-CustomizedUV0_mdl.y),tex::wrap_repeat,tex::wrap_repeat);
+	float3 Local14 = (1.0 - float3(Local13.x,Local13.y,Local13.z));
+	float3 Local15 = (Local14 * 2.0);
+	float3 Local16 = (1.0 - float3(ColorOverlay.x,ColorOverlay.y,ColorOverlay.z));
+	float3 Local17 = (Local15 * Local16);
+	float3 Local18 = (1.0 - Local17);
+	float3 Local19 = (float3(Local13.x,Local13.y,Local13.z) * 2.0);
+	float3 Local20 = (Local19 * float3(ColorOverlay.x,ColorOverlay.y,ColorOverlay.z));
+	float Local21 = ((float3(Local13.x,Local13.y,Local13.z).x >= 0.5) ? Local18.x : Local20.x);
+	float Local22 = ((float3(Local13.x,Local13.y,Local13.z).y >= 0.5) ? Local18.y : Local20.y);
+	float Local23 = ((float3(Local13.x,Local13.y,Local13.z).z >= 0.5) ? Local18.z : Local20.z);
+	float3 Local24 = math::lerp(float3(Local13.x,Local13.y,Local13.z),float3(float2(Local21,Local22).x,float2(Local21,Local22).y,Local23),OverlayIntensity);
+	float3 Local25 = (Local12 + Local24);
+	float4 Local26 = tex::lookup_float4(ORT,float2(CustomizedUV0_mdl.x,1.0-CustomizedUV0_mdl.y),tex::wrap_repeat,tex::wrap_repeat);
+	float Local27 = (Local26.y * RoughnessIntensity);
+	float Local28 = (Local26.x * OpacityIntensity);
+
+	float3 EmissiveColor_mdl = float3(0.0,0.0,0.0);
+	float Opacity_mdl = 1.0;
+	float OpacityMask_mdl = (Local28 - 0.3333) < 0.0f ? 0.0f : 1.0f;
+	float3 BaseColor_mdl = Local25;
+	float Metallic_mdl = 0.0;
+	float Specular_mdl = 0.5;
+	float Roughness_mdl = Local27;
+	float3 SubsurfaceColor_mdl = 0;
+
+	} in
+		::OmniUe4Subsurface(
+			base_color: BaseColor_mdl,
+			metallic: Metallic_mdl,
+			roughness: Roughness_mdl,
+			specular: Specular_mdl,
+			normal: Normal_mdl,
+			opacity: Opacity_mdl,
+			emissive_color: EmissiveColor_mdl,
+			displacement: WorldPositionOffset_mdl,
+			opacity_mask: OpacityMask_mdl,
+			subsurface_color: SubsurfaceColor_mdl,
+			two_sided: true);

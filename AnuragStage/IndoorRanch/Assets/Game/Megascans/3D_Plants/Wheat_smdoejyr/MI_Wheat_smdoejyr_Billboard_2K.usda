@@ -1,0 +1,73 @@
+#usda 1.0
+(
+    defaultPrim = "MI_Wheat_smdoejyr_Billboard_2K"
+    upAxis = "Z"
+)
+
+def Material "MI_Wheat_smdoejyr_Billboard_2K" (
+    assetInfo = {
+        asset identifier = @../../../../../../anuragparcha/Desktop/TestUSD/USDA/Assets/Game/Megascans/3D_Plants/Wheat_smdoejyr/MI_Wheat_smdoejyr_Billboard_2K.usda@
+        string name = "MI_Wheat_smdoejyr_Billboard_2K"
+    }
+)
+{
+    token inputs:stPrimvarName = "st"
+    token outputs:surface.connect = </MI_Wheat_smdoejyr_Billboard_2K/SurfaceShader.outputs:surface>
+    token outputs:unreal:surface.connect = </MI_Wheat_smdoejyr_Billboard_2K/UnrealShader.outputs:out>
+
+    def Shader "UnrealShader"
+    {
+        uniform token info:implementationSource = "sourceAsset"
+        uniform asset info:unreal:sourceAsset = @/Game/Megascans/3D_Plants/Wheat_smdoejyr/MI_Wheat_smdoejyr_Billboard_2K.MI_Wheat_smdoejyr_Billboard_2K@
+        token outputs:out
+    }
+
+    def Shader "SurfaceShader"
+    {
+        uniform token info:id = "UsdPreviewSurface"
+        float inputs:ambientOcclusion = 1
+        color3f inputs:diffuseColor = (0, 0, 0)
+        float inputs:metallic = 0
+        normal3f inputs:normal.connect = </MI_Wheat_smdoejyr_Billboard_2K/normalTexture.outputs:rgb>
+        float inputs:opacity.connect = </MI_Wheat_smdoejyr_Billboard_2K/opacityTexture.outputs:r>
+        float inputs:roughness.connect = </MI_Wheat_smdoejyr_Billboard_2K/roughnessTexture.outputs:r>
+        float inputs:specular = 0.5019608
+        color3f inputs:subsurfaceColor = (0, 0, 0)
+        token outputs:surface
+    }
+
+    def Shader "PrimvarReader"
+    {
+        uniform token info:id = "UsdPrimvarReader_float2"
+        string inputs:varname.connect = </MI_Wheat_smdoejyr_Billboard_2K.inputs:stPrimvarName>
+        token outputs:result
+    }
+
+    def Shader "roughnessTexture"
+    {
+        uniform token info:id = "UsdUVTexture"
+        float4 inputs:fallback = (0.5, 0.5, 0.5, 1)
+        asset inputs:file = @Textures/Game_Megascans_3D_Plants_Wheat_smdoejyr_MI_Wheat_smdoejyr_Billboard_2K_Roughness.png@
+        float2 inputs:st.connect = </MI_Wheat_smdoejyr_Billboard_2K/PrimvarReader.outputs:result>
+        float outputs:r
+    }
+
+    def Shader "opacityTexture"
+    {
+        uniform token info:id = "UsdUVTexture"
+        float4 inputs:fallback = (1, 1, 1, 1)
+        asset inputs:file = @Textures/Game_Megascans_3D_Plants_Wheat_smdoejyr_MI_Wheat_smdoejyr_Billboard_2K_OpacityMask.png@
+        float2 inputs:st.connect = </MI_Wheat_smdoejyr_Billboard_2K/PrimvarReader.outputs:result>
+        float outputs:r
+    }
+
+    def Shader "normalTexture"
+    {
+        uniform token info:id = "UsdUVTexture"
+        float4 inputs:fallback = (0, 1, 0, 1)
+        asset inputs:file = @Textures/Game_Megascans_3D_Plants_Wheat_smdoejyr_MI_Wheat_smdoejyr_Billboard_2K_Normal.png@
+        float2 inputs:st.connect = </MI_Wheat_smdoejyr_Billboard_2K/PrimvarReader.outputs:result>
+        normal3f outputs:rgb
+    }
+}
+

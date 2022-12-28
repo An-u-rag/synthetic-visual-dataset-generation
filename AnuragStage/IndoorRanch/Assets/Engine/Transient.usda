@@ -1,0 +1,40 @@
+#usda 1.0
+(
+    defaultPrim = "WaterMID_22"
+    upAxis = "Z"
+)
+
+def Material "WaterMID_22" (
+    assetInfo = {
+        asset identifier = @../../../../../../anuragparcha/Desktop/TestUSD/USDA/Assets/Engine/Transient.usda@
+        string name = "WaterMID_22"
+    }
+)
+{
+    float inputs:emissiveScale = 0
+    token outputs:surface.connect = </WaterMID_22/SurfaceShader.outputs:surface>
+    token outputs:unreal:surface.connect = </WaterMID_22/UnrealShader.outputs:out>
+
+    def Shader "UnrealShader"
+    {
+        uniform token info:implementationSource = "sourceAsset"
+        uniform asset info:unreal:sourceAsset = @/Engine/Transient.WaterMID_22@
+        token outputs:out
+    }
+
+    def Shader "SurfaceShader"
+    {
+        uniform token info:id = "UsdPreviewSurface"
+        float inputs:ambientOcclusion = 1
+        color3f inputs:diffuseColor = (0.8468732, 0.8468732, 0.8468732)
+        color3f inputs:emissiveColor = (0, 0, 0)
+        float inputs:metallic = 0
+        normal3f inputs:normal = (0, -0, 0)
+        float inputs:opacity = 1
+        float inputs:roughness = 0
+        float inputs:specular = 0.22352941
+        normal3f inputs:tangent = (1, -0.5019608, 0.5019608)
+        token outputs:surface
+    }
+}
+

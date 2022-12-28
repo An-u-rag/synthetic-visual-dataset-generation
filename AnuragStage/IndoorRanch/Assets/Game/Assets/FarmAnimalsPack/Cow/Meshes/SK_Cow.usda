@@ -1,0 +1,59 @@
+#usda 1.0
+(
+    defaultPrim = "SK_Cow"
+    metersPerUnit = 0.009999999776482582
+    upAxis = "Z"
+)
+
+def "SK_Cow" (
+    assetInfo = {
+        asset identifier = @../../../../../../anuragparcha/Desktop/TestUSD/USDA/Assets/Game/Assets/FarmAnimalsPack/Cow/Meshes/SK_Cow.usda@
+        string name = "SK_Cow"
+    }
+    prepend payload = @SK_Cow_payload.usda@
+)
+{
+    over "LOD0"
+    {
+        over "Section0"
+        {
+            custom string unrealMaterial = ""
+        }
+
+        over "Section1"
+        {
+            custom string unrealMaterial = ""
+        }
+    }
+
+    over "LOD1"
+    {
+        over "Section0"
+        {
+            custom string unrealMaterial = ""
+        }
+
+        over "Section1"
+        {
+            custom string unrealMaterial = ""
+        }
+    }
+
+    over "LOD2"
+    {
+        over "Section0"
+        {
+            custom string unrealMaterial = ""
+        }
+
+        over "Section1"
+        {
+            custom string unrealMaterial = ""
+        }
+    }
+
+    def Scope "Materials"
+    {
+    }
+}
+

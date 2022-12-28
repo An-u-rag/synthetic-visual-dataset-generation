@@ -1,0 +1,29 @@
+#usda 1.0
+(
+    defaultPrim = "SM_Shelf"
+    metersPerUnit = 0.009999999776482582
+    upAxis = "Z"
+)
+
+def "SM_Shelf" (
+    prepend apiSchemas = ["MaterialBindingAPI"]
+    assetInfo = {
+        asset identifier = @../../../../../../anuragparcha/Desktop/TestUSD/USDA/Assets/Game/StarterContent/Props/SM_Shelf.usda@
+        string name = "SM_Shelf"
+    }
+    prepend payload = @SM_Shelf_payload.usda@
+)
+{
+    rel material:binding = </SM_Shelf/Materials/M_Shelf>
+    custom string unrealMaterial = "/Game/StarterContent/Props/Materials/M_Shelf.M_Shelf"
+
+    def Scope "Materials"
+    {
+        def Material "M_Shelf" (
+            prepend references = @Materials/M_Shelf.usda@
+        )
+        {
+        }
+    }
+}
+

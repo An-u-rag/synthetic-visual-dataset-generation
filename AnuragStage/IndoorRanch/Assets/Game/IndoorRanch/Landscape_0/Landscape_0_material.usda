@@ -1,0 +1,57 @@
+#usda 1.0
+(
+    defaultPrim = "Landscape_0"
+    endTimeCode = 0
+    metersPerUnit = 0.009999999776482582
+    startTimeCode = 0
+    upAxis = "Z"
+)
+
+def Material "Landscape_0" (
+    assetInfo = {
+        asset identifier = @../../../../../../anuragparcha/Desktop/TestUSD/USDA/Assets/Game/IndoorRanch/Landscape_0/Landscape_0_material.usda@
+        string name = "Landscape_0"
+    }
+)
+{
+    token inputs:stPrimvarName = "st"
+    token outputs:surface.connect = </Landscape_0/SurfaceShader.outputs:surface>
+    custom bool worldSpaceNormals = 1
+
+    def Shader "SurfaceShader"
+    {
+        uniform token info:id = "UsdPreviewSurface"
+        color3f inputs:diffuseColor.connect = </Landscape_0/diffuseTexture.outputs:rgb>
+        float inputs:metallic = 0
+        normal3f inputs:normal.connect = </Landscape_0/normalTexture.outputs:rgb>
+        float inputs:roughness = 1
+        float inputs:specular = 0.5019608
+        token outputs:surface
+    }
+
+    def Shader "PrimvarReader"
+    {
+        uniform token info:id = "UsdPrimvarReader_float2"
+        string inputs:varname.connect = </Landscape_0.inputs:stPrimvarName>
+        token outputs:result
+    }
+
+    def Shader "diffuseTexture"
+    {
+        uniform token info:id = "UsdUVTexture"
+        float4 inputs:fallback = (0, 0, 0, 1)
+        asset inputs:file = @Textures/Game_IndoorRanch_IndoorRanch_PersistentLevel_BaseColor.png@
+        float2 inputs:st.connect = </Landscape_0/PrimvarReader.outputs:result>
+        color3f outputs:rgb
+    }
+
+    def Shader "normalTexture"
+    {
+        uniform token info:id = "UsdUVTexture"
+        float4 inputs:fallback = (0, 1, 0, 1)
+        asset inputs:file = @Textures/Game_IndoorRanch_IndoorRanch_PersistentLevel_Normal.png@
+        float2 inputs:st.connect = </Landscape_0/PrimvarReader.outputs:result>
+        normal3f outputs:rgb
+    }
+}
+

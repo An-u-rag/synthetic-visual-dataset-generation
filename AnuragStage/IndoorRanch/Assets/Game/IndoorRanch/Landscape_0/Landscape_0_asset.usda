@@ -1,0 +1,30 @@
+#usda 1.0
+(
+    defaultPrim = "Landscape_0"
+    endTimeCode = 0
+    metersPerUnit = 0.009999999776482582
+    startTimeCode = 0
+    upAxis = "Z"
+)
+
+def Mesh "Landscape_0" (
+    prepend apiSchemas = ["MaterialBindingAPI"]
+    assetInfo = {
+        asset identifier = @../../../../../../anuragparcha/Desktop/TestUSD/USDA/Assets/Game/IndoorRanch/Landscape_0/Landscape_0_asset.usda@
+        string name = "Landscape_0"
+    }
+    prepend payload = @Landscape_0_payload.usda@
+)
+{
+    rel material:binding = </Landscape_0/Materials/Material>
+
+    def Scope "Materials"
+    {
+        def Material "Material" (
+            prepend references = @Landscape_0_material.usda@
+        )
+        {
+        }
+    }
+}
+

@@ -1,0 +1,36 @@
+#usda 1.0
+(
+    defaultPrim = "M_Basic_Wall"
+    upAxis = "Z"
+)
+
+def Material "M_Basic_Wall" (
+    assetInfo = {
+        asset identifier = @../../../../../../anuragparcha/Desktop/TestUSD/USDA/Assets/Game/StarterContent/Materials/M_Basic_Wall.usda@
+        string name = "M_Basic_Wall"
+    }
+)
+{
+    token outputs:surface.connect = </M_Basic_Wall/SurfaceShader.outputs:surface>
+    token outputs:unreal:surface.connect = </M_Basic_Wall/UnrealShader.outputs:out>
+
+    def Shader "UnrealShader"
+    {
+        uniform token info:implementationSource = "sourceAsset"
+        uniform asset info:unreal:sourceAsset = @/Game/StarterContent/Materials/M_Basic_Wall.M_Basic_Wall@
+        token outputs:out
+    }
+
+    def Shader "SurfaceShader"
+    {
+        uniform token info:id = "UsdPreviewSurface"
+        float inputs:ambientOcclusion = 1
+        float inputs:anisotropy = 0
+        color3f inputs:diffuseColor = (0.80695224, 0.7912979, 0.65140563)
+        float inputs:metallic = 0
+        float inputs:roughness = 0.6392157
+        float inputs:specular = 0.5019608
+        token outputs:surface
+    }
+}
+

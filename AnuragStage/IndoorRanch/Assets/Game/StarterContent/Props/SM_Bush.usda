@@ -1,0 +1,29 @@
+#usda 1.0
+(
+    defaultPrim = "SM_Bush"
+    metersPerUnit = 0.009999999776482582
+    upAxis = "Z"
+)
+
+def "SM_Bush" (
+    prepend apiSchemas = ["MaterialBindingAPI"]
+    assetInfo = {
+        asset identifier = @../../../../../../anuragparcha/Desktop/TestUSD/USDA/Assets/Game/StarterContent/Props/SM_Bush.usda@
+        string name = "SM_Bush"
+    }
+    prepend payload = @SM_Bush_payload.usda@
+)
+{
+    rel material:binding = </SM_Bush/Materials/M_Bush>
+    custom string unrealMaterial = "/Game/StarterContent/Props/Materials/M_Bush.M_Bush"
+
+    def Scope "Materials"
+    {
+        def Material "M_Bush" (
+            prepend references = @Materials/M_Bush.usda@
+        )
+        {
+        }
+    }
+}
+

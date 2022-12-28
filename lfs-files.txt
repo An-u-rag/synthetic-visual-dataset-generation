@@ -1,0 +1,6 @@
+Yolov5TrainingOutputs/yolov5m_100ep_syntheticOnly/weights/best.pt
+Yolov5TrainingOutputs/yolov5m_100ep_syntheticOnly/weights/last.pt
+Yolov5TrainingOutputs/yolov5m_35ep_syntheticAndReal/weights/best.pt
+Yolov5TrainingOutputs/yolov5m_35ep_syntheticAndReal/weights/last.pt
+Yolov5TrainingOutputs/yolov5m_calibrateddataset_60ep_syntheticOnly/weights/best.pt
+Yolov5TrainingOutputs/yolov5m_calibrateddataset_60ep_syntheticOnly/weights/last.pt

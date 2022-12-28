@@ -1,0 +1,77 @@
+mdl 1.6;
+
+import ::math::*;
+import ::state::*;
+import ::tex::*;
+import ::anno::*;
+import ::scene::*;
+using .::OmniUe4Function import *;
+using .::OmniUe4Base import *;
+
+export annotation sampler_color();
+export annotation sampler_normal();
+export annotation sampler_grayscale();
+export annotation sampler_alpha();
+export annotation sampler_masks();
+export annotation sampler_distancefield();
+export annotation dither_masked_off();
+export annotation world_space_normal();
+
+export material MAT_gt_grass0(
+	uniform texture_2d WeightmapRocks = texture_2d("./Textures/WeightMapNullTexture.png",::tex::gamma_linear)
+	[[
+		anno::hidden(),
+		sampler_masks()
+	]],
+	uniform texture_2d WeightmapGrass = texture_2d("./Textures/WeightMapNullTexture.png",::tex::gamma_linear)
+	[[
+		anno::hidden(),
+		sampler_masks()
+	]],
+	int MaxTexCoordIndex = 3
+	[[
+		anno::hidden()
+	]])
+ = 
+	let {
+	float3 WorldPositionOffset_mdl = float3(0.0,0.0,0.0);
+	float2 CustomizedUV0_mdl = float2(state::texture_coordinate(math::min(0,MaxTexCoordIndex)).x,1.0-state::texture_coordinate(math::min(0,MaxTexCoordIndex)).y);
+	float2 CustomizedUV1_mdl = float2(state::texture_coordinate(math::min(1,MaxTexCoordIndex)).x,1.0-state::texture_coordinate(math::min(1,MaxTexCoordIndex)).y);
+
+
+	float3 Normal_mdl = float3(0.0,0.0,1.0);
+
+	float4 Local0 = tex::lookup_float4(WeightmapRocks,float2(CustomizedUV1_mdl.x,1.0-CustomizedUV1_mdl.y),tex::wrap_repeat,tex::wrap_repeat);
+	float Local1 = math::dot(Local0, float4(1.0,0.0,0.0,0.0));
+	float4 Local3 = tex::lookup_float4(WeightmapGrass,float2(CustomizedUV1_mdl.x,1.0-CustomizedUV1_mdl.y),tex::wrap_repeat,tex::wrap_repeat);
+	float Local4 = math::dot(Local3, float4(1.0,0.0,0.0,0.0));
+	float4 Local7 = tex::lookup_float4(texture_2d("./Textures/T_AlpinePatch001_D_alt_R.png",::tex::gamma_srgb),float2(CustomizedUV0_mdl.x,1.0-CustomizedUV0_mdl.y),tex::wrap_repeat,tex::wrap_repeat);
+	float3 Local8 = (float3(Local7.x,Local7.y,Local7.z) * Local1);
+	float3 Local9 = (0.0 + Local8);
+	float4 Local10 = tex::lookup_float4(texture_2d("./Textures/T_GDC_Grass01_D_NoisyAlpha.png",::tex::gamma_srgb),float2(CustomizedUV0_mdl.x,1.0-CustomizedUV0_mdl.y),tex::wrap_repeat,tex::wrap_repeat);
+	float3 Local11 = (float3(Local10.x,Local10.y,Local10.z) * Local4);
+	float3 Local12 = (Local9 + Local11);
+
+	float3 EmissiveColor_mdl = float3(0.0,0.0,0.0);
+	float OpacityMask_mdl = 1.0;
+	float3 BaseColor_mdl = Local12;
+	float Metallic_mdl = 0.0;
+	float Specular_mdl = 0.5;
+	float Roughness_mdl = 0.5;
+
+	float4 Local13 = tex::lookup_float4(WeightmapGrass,float2(CustomizedUV1_mdl.x,1.0-CustomizedUV1_mdl.y),tex::wrap_repeat,tex::wrap_repeat);
+	float Local14 = math::dot(Local13, float4(1.0,0.0,0.0,0.0));
+
+	float GetGrassWeight0_mdl = Local14;
+
+	} in
+		::OmniUe4Base(
+			base_color: BaseColor_mdl,
+			metallic: Metallic_mdl,
+			roughness: Roughness_mdl,
+			specular: Specular_mdl,
+			normal: Normal_mdl,
+			opacity: OpacityMask_mdl,
+			emissive_color: EmissiveColor_mdl,
+			displacement: WorldPositionOffset_mdl,
+			two_sided: false);

@@ -1,0 +1,112 @@
+mdl 1.6;
+
+import ::math::*;
+import ::state::*;
+import ::tex::*;
+import ::anno::*;
+import ::scene::*;
+using .::OmniUe4Function import *;
+using .::OmniUe4Base import *;
+
+export annotation sampler_color();
+export annotation sampler_normal();
+export annotation sampler_grayscale();
+export annotation sampler_alpha();
+export annotation sampler_masks();
+export annotation sampler_distancefield();
+export annotation dither_masked_off();
+export annotation world_space_normal();
+
+export material MI_ProcGrid(
+	float4 LineColour = float4(0.338542,0.338542,0.338542,0.0)
+	[[
+		anno::display_name("Line Colour"),
+		anno::ui_order(32),
+		anno::in_group("Checker")
+	]],
+	float4 CheckerColour1 = float4(0.291667,0.291667,0.291667,0.0)
+	[[
+		anno::display_name("Checker Colour 1"),
+		anno::ui_order(32),
+		anno::in_group("Checker")
+	]],
+	float4 CheckerColour2 = float4(0.239583,0.239583,0.239583,0.0)
+	[[
+		anno::display_name("Checker Colour 2"),
+		anno::ui_order(32),
+		anno::in_group("Checker")
+	]],
+	float TileScale = 100.0
+	[[
+		anno::display_name("Tile Scale"),
+		anno::ui_order(32),
+		anno::in_group("Grid Properties")
+	]],
+	float CheckerRough1 = 0.5
+	[[
+		anno::display_name("Checker Rough 1"),
+		anno::ui_order(32),
+		anno::in_group("Checker")
+	]],
+	float CheckerRough2 = 0.65
+	[[
+		anno::display_name("Checker Rough 2"),
+		anno::ui_order(32),
+		anno::in_group("Checker")
+	]])
+ = 
+	let {
+
+	float3 VertexInterpolator0_mdl = ::vertex_normal_world_space(true);
+
+	float3 WorldPositionOffset_mdl = float3(0.0,0.0,0.0);
+
+
+	float3 Normal_mdl = float3(0.0,0.0,1.0);
+
+	float3 Local0 = ((::convert_to_left_hand(state::transform_point(state::coordinate_internal,state::coordinate_world,state::position()), true)*state::meters_per_scene_unit()*100.0) / TileScale);
+	float3 Local1 = (Local0 * 0.5);
+	float4 Local2 = tex::lookup_float4(texture_2d("./Textures/T_GridChecker_A.png",::tex::gamma_srgb),float2(float2(Local1.x,Local1.z).x,1.0-float2(Local1.x,Local1.z).y),tex::wrap_repeat,tex::wrap_repeat);
+	float4 Local3 = tex::lookup_float4(texture_2d("./Textures/T_GridChecker_A.png",::tex::gamma_srgb),float2(float2(Local1.y,Local1.z).x,1.0-float2(Local1.y,Local1.z).y),tex::wrap_repeat,tex::wrap_repeat);
+	float Local4 = (0.0 - 1.0);
+	float Local5 = (1.0 + 1.0);
+	float Local6 = math::abs(::vertex_normal_world_space(true).x);
+	float Local7 = math::lerp(Local4,Local5,Local6);
+	float Local8 = math::min(math::max(Local7,0.0),1.0);
+	float Local9 = math::lerp(Local2.y,Local3.y,Local8);
+	float4 Local10 = tex::lookup_float4(texture_2d("./Textures/T_GridChecker_A.png",::tex::gamma_srgb),float2(float2(Local1.x,Local1.y).x,1.0-float2(Local1.x,Local1.y).y),tex::wrap_repeat,tex::wrap_repeat);
+	float Local11 = math::abs(::vertex_normal_world_space(true).z);
+	float Local12 = math::lerp(Local4,Local5,Local11);
+	float Local13 = math::min(math::max(Local12,0.0),1.0);
+	float Local14 = math::lerp(Local9,Local10.y,Local13);
+	float Local15 = (Local14 * 1.0);
+	float3 Local16 = math::lerp(float3(CheckerColour1.x,CheckerColour1.y,CheckerColour1.z),float3(CheckerColour2.x,CheckerColour2.y,CheckerColour2.z),Local15);
+	float4 Local17 = tex::lookup_float4(texture_2d("./Textures/T_GridChecker_A.png",::tex::gamma_srgb),float2(float2(Local0.x,Local0.z).x,1.0-float2(Local0.x,Local0.z).y),tex::wrap_repeat,tex::wrap_repeat);
+	float4 Local18 = tex::lookup_float4(texture_2d("./Textures/T_GridChecker_A.png",::tex::gamma_srgb),float2(float2(Local0.y,Local0.z).x,1.0-float2(Local0.y,Local0.z).y),tex::wrap_repeat,tex::wrap_repeat);
+	float Local19 = math::lerp(Local17.x,Local18.x,Local8);
+	float4 Local20 = tex::lookup_float4(texture_2d("./Textures/T_GridChecker_A.png",::tex::gamma_srgb),float2(float2(Local0.x,Local0.y).x,1.0-float2(Local0.x,Local0.y).y),tex::wrap_repeat,tex::wrap_repeat);
+	float Local21 = math::lerp(Local19,Local20.x,Local13);
+	float Local22 = (1.0 - Local21);
+	float3 Local23 = math::lerp(float3(LineColour.x,LineColour.y,LineColour.z),Local16,Local22);
+	float Local24 = (1.0 - Local22);
+	float Local25 = math::lerp(CheckerRough1,CheckerRough2,Local14);
+	float Local26 = math::lerp(0.3,Local25,Local22);
+
+	float3 EmissiveColor_mdl = float3(0.0,0.0,0.0);
+	float OpacityMask_mdl = 1.0;
+	float3 BaseColor_mdl = Local23;
+	float Metallic_mdl = Local24;
+	float Specular_mdl = 0.5;
+	float Roughness_mdl = Local26;
+
+	} in
+		::OmniUe4Base(
+			base_color: BaseColor_mdl,
+			metallic: Metallic_mdl,
+			roughness: Roughness_mdl,
+			specular: Specular_mdl,
+			normal: Normal_mdl,
+			opacity: OpacityMask_mdl,
+			emissive_color: EmissiveColor_mdl,
+			displacement: WorldPositionOffset_mdl,
+			two_sided: false);

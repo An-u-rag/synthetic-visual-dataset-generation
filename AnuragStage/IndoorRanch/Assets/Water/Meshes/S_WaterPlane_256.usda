@@ -1,0 +1,81 @@
+#usda 1.0
+(
+    defaultPrim = "S_WaterPlane_256"
+    metersPerUnit = 0.009999999776482582
+    upAxis = "Z"
+)
+
+def "S_WaterPlane_256" (
+    assetInfo = {
+        asset identifier = @../../../../../../anuragparcha/Desktop/TestUSD/USDA/Assets/Water/Meshes/S_WaterPlane_256.usda@
+        string name = "S_WaterPlane_256"
+    }
+    prepend payload = @S_WaterPlane_256_payload.usda@
+)
+{
+    over "LOD0" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        rel material:binding = </S_WaterPlane_256/Materials/Water_Material>
+        custom string unrealMaterial = "/Water/Materials/WaterSurface/Water_Material.Water_Material"
+    }
+
+    over "LOD1" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        rel material:binding = </S_WaterPlane_256/Materials/Water_Material>
+        custom string unrealMaterial = "/Water/Materials/WaterSurface/Water_Material.Water_Material"
+    }
+
+    over "LOD2" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        rel material:binding = </S_WaterPlane_256/Materials/Water_Material>
+        custom string unrealMaterial = "/Water/Materials/WaterSurface/Water_Material.Water_Material"
+    }
+
+    over "LOD3" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        rel material:binding = </S_WaterPlane_256/Materials/Water_Material>
+        custom string unrealMaterial = "/Water/Materials/WaterSurface/Water_Material.Water_Material"
+    }
+
+    over "LOD4" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        rel material:binding = </S_WaterPlane_256/Materials/Water_Material>
+        custom string unrealMaterial = "/Water/Materials/WaterSurface/Water_Material.Water_Material"
+    }
+
+    over "LOD5" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        rel material:binding = </S_WaterPlane_256/Materials/Water_Material>
+        custom string unrealMaterial = "/Water/Materials/WaterSurface/Water_Material.Water_Material"
+    }
+
+    over "LOD6" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        rel material:binding = </S_WaterPlane_256/Materials/Water_Material>
+        custom string unrealMaterial = "/Water/Materials/WaterSurface/Water_Material.Water_Material"
+    }
+
+    def Scope "Materials"
+    {
+        def Material "Water_Material" (
+            prepend references = @../Materials/WaterSurface/Water_Material.usda@
+        )
+        {
+        }
+    }
+}
+

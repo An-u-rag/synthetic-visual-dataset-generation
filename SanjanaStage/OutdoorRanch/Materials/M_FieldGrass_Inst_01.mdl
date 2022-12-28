@@ -1,0 +1,166 @@
+mdl 1.6;
+
+import ::math::*;
+import ::state::*;
+import ::tex::*;
+import ::anno::*;
+import ::scene::*;
+using .::OmniUe4Function import *;
+using .::OmniUe4Subsurface import *;
+
+export annotation sampler_color();
+export annotation sampler_normal();
+export annotation sampler_grayscale();
+export annotation sampler_alpha();
+export annotation sampler_masks();
+export annotation sampler_distancefield();
+export annotation dither_masked_off();
+export annotation world_space_normal();
+
+export material M_FieldGrass_Inst_01(
+	uniform texture_2d Diffuse = texture_2d("./Textures/T_FieldGrass_01_D.png",::tex::gamma_srgb)
+	[[
+		anno::display_name("Diffuse"),
+		anno::ui_order(32),
+		anno::in_group("Diffuse"),
+		sampler_color()
+	]],
+	float4 GrassTipColor = float4(3.0,2.915346,2.825072,1.0)
+	[[
+		anno::display_name("GrassTipColor"),
+		anno::ui_order(32)
+	]],
+	float4 GrassDeadColor = float4(4.0,3.243198,2.62,1.0)
+	[[
+		anno::display_name("GrassDeadColor"),
+		anno::ui_order(32)
+	]],
+	float SpecularAmount = 0.05
+	[[
+		anno::display_name("SpecularAmount"),
+		anno::ui_order(32),
+		anno::in_group("Specular")
+	]],
+	float Roughness = 0.4
+	[[
+		anno::display_name("Roughness"),
+		anno::ui_order(32),
+		anno::in_group("Specular")
+	]],
+	float4 WPOWaveAmounttXYZ = float4(0.9,0.9,-0.5,1.0)
+	[[
+		anno::display_name("WPOWaveAmounttXYZ"),
+		anno::ui_order(32),
+		anno::in_group("WPO")
+	]],
+	int MaxTexCoordIndex = 3
+	[[
+		anno::hidden()
+	]])
+[[
+	world_space_normal(),
+	dither_masked_off(),
+	distill_off()
+]]
+ = 
+	let {
+	float2 Local43 = (float2((::convert_to_left_hand(state::transform_point(state::coordinate_internal,state::coordinate_world,state::position()), true)*state::meters_per_scene_unit()*100.0).x,(::convert_to_left_hand(state::transform_point(state::coordinate_internal,state::coordinate_world,state::position()), true)*state::meters_per_scene_unit()*100.0).y) / 600.0);
+	float Local48 = (state::animation_time() * 0.14);
+	float Local49 = (Local48 * 1.0);
+	float Local50 = math::frac(Local49);
+	float Local51 = (Local48 * 0.0);
+	float Local52 = math::frac(Local51);
+	float2 Local53 = (float2(Local50,Local52) + Local43);
+	float4 Local54 = ::unpack_normal_map(tex::lookup_float4(texture_2d("./Textures/T_Water_N.png",::tex::gamma_linear),float2(Local53.x,1.0-Local53.y),tex::wrap_repeat,tex::wrap_repeat));
+	float2 Local55 = (float2(Local52,Local50) + Local43);
+	float4 Local56 = ::unpack_normal_map(tex::lookup_float4(texture_2d("./Textures/T_Water_N.png",::tex::gamma_linear),float2(Local55.x,1.0-Local55.y),tex::wrap_repeat,tex::wrap_repeat));
+	float3 Local57 = (float3(Local54.x,Local54.y,Local54.z) + float3(Local56.x,Local56.y,Local56.z));
+	float3 Local58 = math::normalize(Local57);
+	float3 Local59 = (Local58 * 6.283185);
+	float3 Local60 = ::rotate_about_axis(float4(::vertex_normal_world_space(true).x,::vertex_normal_world_space(true).y,::vertex_normal_world_space(true).z,Local59.x),float3(0.0,0.0,-50.0),float3(0.0,0.0,0.0));
+	float3 Local61 = (Local60 * float3(WPOWaveAmounttXYZ.x,WPOWaveAmounttXYZ.y,WPOWaveAmounttXYZ.z));
+	float3 Local62 = math::lerp(float3(0.0,0.0,0.0),Local61,float4(scene::data_lookup_float3("displayColor").x, scene::data_lookup_float3("displayColor").y, scene::data_lookup_float3("displayColor").z, scene::data_lookup_float("displayOpacity")).y);
+	float3 Local63 = (float3(0.0,0.0,0.0) + Local62);
+	float3 Local67 = ::camera_position();
+	float3 Local68 = (Local67 - (::convert_to_left_hand(state::transform_point(state::coordinate_internal,state::coordinate_world,state::position()), true)*state::meters_per_scene_unit()*100.0));
+	float Local69 = math::length(Local68);
+	float Local70 = (Local69 / 1600.0);
+	float Local71 = math::min(math::max(Local70,0.0),1.0);
+	float3 Local72 = ::convert_to_left_hand(state::transform_vector(state::coordinate_object, state::coordinate_world, ::convert_to_left_hand(float3(float3(0.0,0.0,1.0).x,float3(0.0,0.0,1.0).y,float3(0.0,0.0,1.0).z), true, false)), true, false);
+
+	float3 WorldPositionOffset_mdl = Local63;
+	float2 CustomizedUV0_mdl = float2(state::texture_coordinate(math::min(0,MaxTexCoordIndex)).x,1.0-state::texture_coordinate(math::min(0,MaxTexCoordIndex)).y);
+	float2 CustomizedUV1_mdl = float2(Local71,Local71);
+	float2 CustomizedUV2_mdl = float2(Local72.x,Local72.y);
+	float2 CustomizedUV3_mdl = float2(Local72.z,Local72.z);
+
+	float3 Local0 = math::normalize(float3(CustomizedUV2_mdl.x,CustomizedUV2_mdl.y,CustomizedUV3_mdl.x));
+	float3 Local1 = math::normalize(float3(0.0001,0.0,1.0));
+	float3 Local2 = math::cross(Local0,Local1);
+	float3 Local3 = math::cross(Local2,Local0);
+	float Local4 = math::dot(Local3, Local3);
+	float3 Local5 = math::normalize(Local3);
+	float4 Local6 = ((math::abs(Local4 - 0.000001) > 0.00001) ? (Local4 >= 0.000001 ? float4(Local5.x,Local5.y,Local5.z,0.0) : float4(float3(0.0,0.0,0.0).x,float3(0.0,0.0,0.0).y,float3(0.0,0.0,0.0).z,1.0)) : float4(float3(0.0,0.0,0.0).x,float3(0.0,0.0,0.0).y,float3(0.0,0.0,0.0).z,1.0));
+	float Local7 = (state::animation_time() * 0.14);
+	float Local8 = (Local7 * 1.0);
+	float Local9 = math::frac(Local8);
+	float Local10 = (Local7 * 0.0);
+	float Local11 = math::frac(Local10);
+	float2 Local12 = (float2((::convert_to_left_hand(state::transform_point(state::coordinate_internal,state::coordinate_world,state::position()), true)*state::meters_per_scene_unit()*100.0).x,(::convert_to_left_hand(state::transform_point(state::coordinate_internal,state::coordinate_world,state::position()), true)*state::meters_per_scene_unit()*100.0).y) / 600.0);
+	float2 Local13 = (float2(Local9,Local11) + Local12);
+	float4 Local14 = ::unpack_normal_map(tex::lookup_float4(texture_2d("./Textures/T_Water_N.png",::tex::gamma_linear),float2(Local13.x,1.0-Local13.y),tex::wrap_repeat,tex::wrap_repeat));
+	float2 Local15 = (float2(Local11,Local9) + Local12);
+	float4 Local16 = ::unpack_normal_map(tex::lookup_float4(texture_2d("./Textures/T_Water_N.png",::tex::gamma_linear),float2(Local15.x,1.0-Local15.y),tex::wrap_repeat,tex::wrap_repeat));
+	float3 Local17 = (float3(Local14.x,Local14.y,Local14.z) + float3(Local16.x,Local16.y,Local16.z));
+	float3 Local18 = (Local17 * float3(10.0,10.0,1.0));
+	float3 Local19 = math::lerp(float3(0.0,0.0,1.0),Local18,float4(scene::data_lookup_float3("displayColor").x, scene::data_lookup_float3("displayColor").y, scene::data_lookup_float3("displayColor").z, scene::data_lookup_float("displayOpacity")).y);
+	float3 Local20 = math::lerp(Local19,float3(0.0,0.0,1.0),CustomizedUV1_mdl.x);
+	float3 Local21 = (float3(0.0,0.0,0.5) + Local20);
+	float3 Local22 = (float3(Local6.x,Local6.y,Local6.z) * Local21.x);
+	float Local23 = math::dot(Local2, Local2);
+	float3 Local24 = math::normalize(Local2);
+	float4 Local25 = ((math::abs(Local23 - 0.000001) > 0.00001) ? (Local23 >= 0.000001 ? float4(Local24.x,Local24.y,Local24.z,0.0) : float4(float3(0.0,0.0,0.0).x,float3(0.0,0.0,0.0).y,float3(0.0,0.0,0.0).z,1.0)) : float4(float3(0.0,0.0,0.0).x,float3(0.0,0.0,0.0).y,float3(0.0,0.0,0.0).z,1.0));
+	float3 Local26 = (float3(Local25.x,Local25.y,Local25.z) * Local21.y);
+	float3 Local27 = (Local22 + Local26);
+	float3 Local28 = (Local0 * Local21.z);
+	float3 Local29 = (Local28 + float3(0.0,0.0,0.0));
+	float3 Local30 = (Local27 + Local29);
+
+	float3 Normal_mdl = Local30;
+
+	float4 Local31 = tex::lookup_float4(Diffuse,float2(CustomizedUV0_mdl.x,1.0-CustomizedUV0_mdl.y),tex::wrap_repeat,tex::wrap_repeat);
+	float3 Local32 = (float3(GrassTipColor.x,GrassTipColor.y,GrassTipColor.z) * float3(Local31.x,Local31.y,Local31.z));
+	float4 Local33 = tex::lookup_float4(texture_2d("./Textures/T_FieldGrass_02_M.png",::tex::gamma_linear),float2(Local12.x,1.0-Local12.y),tex::wrap_repeat,tex::wrap_repeat);
+	float Local34 = (float4(scene::data_lookup_float3("displayColor").x, scene::data_lookup_float3("displayColor").y, scene::data_lookup_float3("displayColor").z, scene::data_lookup_float("displayOpacity")).y * Local33.x);
+	float Local35 = math::max(Local34,0.0);
+	float3 Local36 = math::lerp(float3(Local31.x,Local31.y,Local31.z),Local32,Local35);
+	float3 Local37 = (float3(GrassDeadColor.x,GrassDeadColor.y,GrassDeadColor.z) * Local31.y);
+	float Local38 = (float4(scene::data_lookup_float3("displayColor").x, scene::data_lookup_float3("displayColor").y, scene::data_lookup_float3("displayColor").z, scene::data_lookup_float("displayOpacity")).y * Local33.y);
+	float Local39 = math::max(Local38,0.0);
+	float3 Local40 = math::lerp(Local36,Local37,Local39);
+	float Local41 = math::lerp(0.0,SpecularAmount,float4(scene::data_lookup_float3("displayColor").x, scene::data_lookup_float3("displayColor").y, scene::data_lookup_float3("displayColor").z, scene::data_lookup_float("displayOpacity")).y);
+	float Local42 = (float4(scene::data_lookup_float3("displayColor").x, scene::data_lookup_float3("displayColor").y, scene::data_lookup_float3("displayColor").z, scene::data_lookup_float("displayOpacity")).y * Local41);
+
+	float3 EmissiveColor_mdl = float3(0.0,0.0,0.0);
+	float Opacity_mdl = 0.3;
+	float OpacityMask_mdl = (Local31.w - 0.3333) < 0.0f ? 0.0f : 1.0f;
+	float3 BaseColor_mdl = Local40;
+	float Metallic_mdl = 0.0;
+	float Specular_mdl = Local42;
+	float Roughness_mdl = Roughness;
+	float3 SubsurfaceColor_mdl = 0;
+
+	} in
+		::OmniUe4Subsurface(
+			base_color: BaseColor_mdl,
+			metallic: Metallic_mdl,
+			roughness: Roughness_mdl,
+			specular: Specular_mdl,
+			normal: Normal_mdl,
+			opacity: Opacity_mdl,
+			emissive_color: EmissiveColor_mdl,
+			displacement: WorldPositionOffset_mdl,
+			opacity_mask: OpacityMask_mdl,
+			subsurface_color: SubsurfaceColor_mdl,
+			two_sided: true,
+			is_tangent_space_normal: false);

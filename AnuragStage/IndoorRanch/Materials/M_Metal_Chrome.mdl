@@ -1,0 +1,63 @@
+mdl 1.6;
+
+import ::math::*;
+import ::state::*;
+import ::tex::*;
+import ::anno::*;
+import ::scene::*;
+using .::OmniUe4Function import *;
+using .::OmniUe4Base import *;
+
+export annotation sampler_color();
+export annotation sampler_normal();
+export annotation sampler_grayscale();
+export annotation sampler_alpha();
+export annotation sampler_masks();
+export annotation sampler_distancefield();
+export annotation dither_masked_off();
+export annotation world_space_normal();
+
+export material M_Metal_Chrome(
+	int MaxTexCoordIndex = 3
+	[[
+		anno::hidden()
+	]])
+ = 
+	let {
+	float3 WorldPositionOffset_mdl = float3(0.0,0.0,0.0);
+	float2 CustomizedUV0_mdl = float2(state::texture_coordinate(math::min(0,MaxTexCoordIndex)).x,1.0-state::texture_coordinate(math::min(0,MaxTexCoordIndex)).y);
+
+
+	float3 Normal_mdl = float3(0.0,0.0,1.0);
+
+	float2 Local0 = (CustomizedUV0_mdl * 0.2134);
+	float4 Local1 = tex::lookup_float4(texture_2d("./Textures/T_MacroVariation.png",::tex::gamma_srgb),float2(Local0.x,1.0-Local0.y),tex::wrap_repeat,tex::wrap_repeat);
+	float Local2 = (Local1.x + 0.5);
+	float2 Local3 = (CustomizedUV0_mdl * 0.05341);
+	float4 Local4 = tex::lookup_float4(texture_2d("./Textures/T_MacroVariation.png",::tex::gamma_srgb),float2(Local3.x,1.0-Local3.y),tex::wrap_repeat,tex::wrap_repeat);
+	float Local5 = (Local4.x + 0.5);
+	float2 Local6 = (CustomizedUV0_mdl * 0.002);
+	float4 Local7 = tex::lookup_float4(texture_2d("./Textures/T_MacroVariation.png",::tex::gamma_srgb),float2(Local6.x,1.0-Local6.y),tex::wrap_repeat,tex::wrap_repeat);
+	float Local8 = (Local7.x + 0.5);
+	float Local9 = (Local5 * Local8);
+	float Local10 = (Local2 * Local9);
+	float Local11 = math::lerp(1.0,0.9,Local10);
+
+	float3 EmissiveColor_mdl = float3(0.0,0.0,0.0);
+	float OpacityMask_mdl = 1.0;
+	float3 BaseColor_mdl = float3(Local11,Local11,Local11);
+	float Metallic_mdl = 1.0;
+	float Specular_mdl = 0.5;
+	float Roughness_mdl = 0.25;
+
+	} in
+		::OmniUe4Base(
+			base_color: BaseColor_mdl,
+			metallic: Metallic_mdl,
+			roughness: Roughness_mdl,
+			specular: Specular_mdl,
+			normal: Normal_mdl,
+			opacity: OpacityMask_mdl,
+			emissive_color: EmissiveColor_mdl,
+			displacement: WorldPositionOffset_mdl,
+			two_sided: false);

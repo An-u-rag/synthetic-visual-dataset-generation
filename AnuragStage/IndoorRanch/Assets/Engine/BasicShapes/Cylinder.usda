@@ -1,0 +1,29 @@
+#usda 1.0
+(
+    defaultPrim = "Cylinder"
+    metersPerUnit = 0.009999999776482582
+    upAxis = "Z"
+)
+
+def "Cylinder" (
+    prepend apiSchemas = ["MaterialBindingAPI"]
+    assetInfo = {
+        asset identifier = @../../../../../../anuragparcha/Desktop/TestUSD/USDA/Assets/Engine/BasicShapes/Cylinder.usda@
+        string name = "Cylinder"
+    }
+    prepend payload = @Cylinder_payload.usda@
+)
+{
+    rel material:binding = </Cylinder/Materials/DefaultMaterial>
+    custom string unrealMaterial = "/Engine/EngineMaterials/DefaultMaterial.DefaultMaterial"
+
+    def Scope "Materials"
+    {
+        def Material "DefaultMaterial" (
+            prepend references = @../EngineMaterials/DefaultMaterial.usda@
+        )
+        {
+        }
+    }
+}
+

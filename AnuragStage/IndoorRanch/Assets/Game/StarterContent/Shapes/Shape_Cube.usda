@@ -1,0 +1,29 @@
+#usda 1.0
+(
+    defaultPrim = "Shape_Cube"
+    metersPerUnit = 0.009999999776482582
+    upAxis = "Z"
+)
+
+def "Shape_Cube" (
+    prepend apiSchemas = ["MaterialBindingAPI"]
+    assetInfo = {
+        asset identifier = @../../../../../../anuragparcha/Desktop/TestUSD/USDA/Assets/Game/StarterContent/Shapes/Shape_Cube.usda@
+        string name = "Shape_Cube"
+    }
+    prepend payload = @Shape_Cube_payload.usda@
+)
+{
+    rel material:binding = </Shape_Cube/Materials/M_Basic_Wall>
+    custom string unrealMaterial = "/Game/StarterContent/Materials/M_Basic_Wall.M_Basic_Wall"
+
+    def Scope "Materials"
+    {
+        def Material "M_Basic_Wall" (
+            prepend references = @../Materials/M_Basic_Wall.usda@
+        )
+        {
+        }
+    }
+}
+

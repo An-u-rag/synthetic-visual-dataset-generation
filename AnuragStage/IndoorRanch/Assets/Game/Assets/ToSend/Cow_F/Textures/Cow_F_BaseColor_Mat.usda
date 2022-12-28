@@ -1,0 +1,53 @@
+#usda 1.0
+(
+    defaultPrim = "Cow_F_BaseColor_Mat"
+    upAxis = "Z"
+)
+
+def Material "Cow_F_BaseColor_Mat" (
+    assetInfo = {
+        asset identifier = @../../../../../../anuragparcha/Desktop/TestUSD/USDA/Assets/Game/Assets/ToSend/Cow_F/Textures/Cow_F_BaseColor_Mat.usda@
+        string name = "Cow_F_BaseColor_Mat"
+    }
+)
+{
+    token inputs:stPrimvarName = "st"
+    token outputs:surface.connect = </Cow_F_BaseColor_Mat/SurfaceShader.outputs:surface>
+    token outputs:unreal:surface.connect = </Cow_F_BaseColor_Mat/UnrealShader.outputs:out>
+
+    def Shader "UnrealShader"
+    {
+        uniform token info:implementationSource = "sourceAsset"
+        uniform asset info:unreal:sourceAsset = @/Game/Assets/ToSend/Cow_F/Textures/Cow_F_BaseColor_Mat.Cow_F_BaseColor_Mat@
+        token outputs:out
+    }
+
+    def Shader "SurfaceShader"
+    {
+        uniform token info:id = "UsdPreviewSurface"
+        float inputs:ambientOcclusion = 1
+        float inputs:anisotropy = 0
+        color3f inputs:diffuseColor.connect = </Cow_F_BaseColor_Mat/diffuseTexture.outputs:rgb>
+        float inputs:metallic = 0
+        float inputs:roughness = 0.5019608
+        float inputs:specular = 0.5019608
+        token outputs:surface
+    }
+
+    def Shader "PrimvarReader"
+    {
+        uniform token info:id = "UsdPrimvarReader_float2"
+        string inputs:varname.connect = </Cow_F_BaseColor_Mat.inputs:stPrimvarName>
+        token outputs:result
+    }
+
+    def Shader "diffuseTexture"
+    {
+        uniform token info:id = "UsdUVTexture"
+        float4 inputs:fallback = (0, 0, 0, 1)
+        asset inputs:file = @Textures/Game_Assets_ToSend_Cow_F_Textures_Cow_F_BaseColor_Mat_BaseColor.png@
+        float2 inputs:st.connect = </Cow_F_BaseColor_Mat/PrimvarReader.outputs:result>
+        color3f outputs:rgb
+    }
+}
+

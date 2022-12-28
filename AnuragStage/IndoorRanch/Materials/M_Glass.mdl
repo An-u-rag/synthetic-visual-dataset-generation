@@ -1,0 +1,80 @@
+mdl 1.6;
+
+import ::math::*;
+import ::state::*;
+import ::tex::*;
+import ::anno::*;
+import ::scene::*;
+using .::OmniUe4Function import *;
+using .::OmniUe4Translucent import *;
+
+export annotation sampler_color();
+export annotation sampler_normal();
+export annotation sampler_grayscale();
+export annotation sampler_alpha();
+export annotation sampler_masks();
+export annotation sampler_distancefield();
+export annotation dither_masked_off();
+export annotation world_space_normal();
+
+export material M_Glass(
+	float4 ColorGlass = float4(0.0,0.001202,0.003303,1.0)
+	[[
+		anno::display_name("ColorGlass"),
+		anno::ui_order(32),
+		anno::in_group("Glass")
+	]],
+	float Specular = 10.0
+	[[
+		anno::display_name("Specular"),
+		anno::ui_order(32),
+		anno::in_group("Glass")
+	]],
+	float Roughness = 0.0
+	[[
+		anno::display_name("Roughness"),
+		anno::ui_order(32),
+		anno::in_group("Glass")
+	]],
+	float Opacity = 0.35
+	[[
+		anno::display_name("Opacity"),
+		anno::ui_order(32),
+		anno::in_group("Glass")
+	]],
+	uniform float Refraction = 1.4
+	[[
+		anno::display_name("Refraction"),
+		anno::ui_order(32),
+		anno::in_group("Refraction")
+	]])
+ = 
+	let {
+	float3 WorldPositionOffset_mdl = float3(0.0,0.0,0.0);
+
+
+	float3 Normal_mdl = float3(0.0,0.0,1.0);
+
+
+	float3 EmissiveColor_mdl = float3(0.0,0.0,0.0);
+	float Opacity_mdl = Opacity;
+	float OpacityMask_mdl = (math::saturate(Opacity) - 1.0f / 255.0f) < 0.0f ? 0.0f : 1.0f;
+	float3 BaseColor_mdl = float3(ColorGlass.x,ColorGlass.y,ColorGlass.z);
+	float Metallic_mdl = 0.0;
+	float Specular_mdl = Specular;
+	float Roughness_mdl = Roughness;
+	float2 Refraction_mdl = float2(Refraction,Refraction);
+
+	} in
+		::OmniUe4Translucent(
+			base_color: BaseColor_mdl,
+			metallic: Metallic_mdl,
+			roughness: Roughness_mdl,
+			specular: Specular_mdl,
+			normal: Normal_mdl,
+			opacity: Opacity_mdl,
+			opacity_mask: OpacityMask_mdl,
+			emissive_color: EmissiveColor_mdl,
+			displacement: WorldPositionOffset_mdl,
+			refraction: Refraction_mdl.x,
+			two_sided: false);

@@ -1,0 +1,59 @@
+#usda 1.0
+(
+    defaultPrim = "Cow_F"
+    metersPerUnit = 0.009999999776482582
+    upAxis = "Z"
+)
+
+def "Cow_F" (
+    assetInfo = {
+        asset identifier = @../../../../../../anuragparcha/Desktop/TestUSD/USDA/Assets/Game/Assets/ToSend/Cow_F/Meshes/Cow_F.usda@
+        string name = "Cow_F"
+    }
+    prepend payload = @Cow_F_payload.usda@
+)
+{
+    over "LOD0"
+    {
+        over "Section0"
+        {
+            custom string unrealMaterial = ""
+        }
+
+        over "Section1"
+        {
+            custom string unrealMaterial = ""
+        }
+    }
+
+    over "LOD1"
+    {
+        over "Section0"
+        {
+            custom string unrealMaterial = ""
+        }
+
+        over "Section1"
+        {
+            custom string unrealMaterial = ""
+        }
+    }
+
+    over "LOD2"
+    {
+        over "Section0"
+        {
+            custom string unrealMaterial = ""
+        }
+
+        over "Section1"
+        {
+            custom string unrealMaterial = ""
+        }
+    }
+
+    def Scope "Materials"
+    {
+    }
+}
+

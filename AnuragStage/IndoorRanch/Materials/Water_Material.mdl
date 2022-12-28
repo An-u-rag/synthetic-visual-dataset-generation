@@ -1,0 +1,899 @@
+mdl 1.6;
+
+import ::math::*;
+import ::state::*;
+import ::tex::*;
+import ::anno::*;
+import ::scene::*;
+using .::OmniUe4Function import *;
+using .::OmniUe4Base import *;
+
+export annotation sampler_color();
+export annotation sampler_normal();
+export annotation sampler_grayscale();
+export annotation sampler_alpha();
+export annotation sampler_masks();
+export annotation sampler_distancefield();
+export annotation dither_masked_off();
+export annotation world_space_normal();
+
+float CustomExpression0()
+{
+return GetWaterWaveParamIndex(Parameters);
+}
+
+
+float3 CustomExpression1(float WaterBodyIndex,float2 WorldPosition,float Time)
+{
+WaveOutput Waves;
+
+Waves = GetAllGerstnerWavesNew(WaterBodyIndex, Time, WorldPosition);
+return PackNormalAndWPONew(Waves);
+}
+
+
+float3 CustomExpression2(float3 inPackedWave)
+{
+		float3 outnormal = math::frac(inPackedWave);
+		outnormal *= 2.02;
+		outnormal -= 1.01;
+		return outnormal;
+}
+
+
+float CustomExpression3(float WaterBodyIndex,float WaterDepth)
+{
+return ComputeWaveDepthAttenuationFactorNew(WaterBodyIndex, WaterDepth);
+}
+
+
+float3 CustomExpression4(float3 inPackedWave)
+{
+		float3 outWPO;
+		outWPO = math::floor(inPackedWave) / 100;
+		return outWPO;
+}
+
+
+float CustomExpression5(float x)
+{
+return 1.0-math::exp(-x);;
+}
+
+
+float CustomExpression6(float X)
+{
+return math::log2(X);
+}
+
+
+float CustomExpression7(float x)
+{
+return 1-math::exp(-x);
+}
+
+
+float3 CustomExpression8(float3 Color,float x)
+{
+clip(x);
+return Color;
+}
+
+
+export material Water_Material(
+	float Time = 0.0
+	[[
+		anno::display_name("Time")
+	]],
+	float ManualTime = 0.0
+	[[
+		anno::display_name("ManualTime")
+	]],
+	float FreezeTime = 0.0
+	[[
+		anno::display_name("FreezeTime")
+	]],
+	uniform texture_2d WaterVelocityAndHeight = texture_2d("./Textures/Black_1x1_EXR_Texture.exr",::tex::gamma_linear)
+	[[
+		anno::display_name("WaterVelocityAndHeight"),
+		anno::ui_order(32),
+		sampler_color()
+	]],
+	float4 WaterArea = float4(0.0,0.0,0.0,0.0)
+	[[
+		anno::display_name("WaterArea"),
+		anno::ui_order(32)
+	]],
+	float TerrainMaxZ = 10000.0
+	[[
+		anno::display_name("TerrainMaxZ")
+	]],
+	float TerrainMinZ = -10000.0
+	[[
+		anno::display_name("TerrainMinZ")
+	]],
+	float DefaultDisantWaterSpeed = 0.75
+	[[
+		anno::display_name("Default Disant Water Speed"),
+		anno::ui_order(32),
+		anno::in_group("Detail Normal Settings")
+	]],
+	float DefaultNearWaterScale = 512.0
+	[[
+		anno::display_name("Default Near Water Scale"),
+		anno::ui_order(32),
+		anno::in_group("Detail Normal Settings")
+	]],
+	float DefaultDistantWaterScale = 3500.0
+	[[
+		anno::display_name("Default Distant Water Scale"),
+		anno::ui_order(32),
+		anno::in_group("Detail Normal Settings")
+	]],
+	float WaterDistantNormalOffset = 5000.0
+	[[
+		anno::display_name("Water Distant Normal Offset"),
+		anno::ui_order(32),
+		anno::in_group("Detail Normal Settings")
+	]],
+	float WaterDistantNormalLength = 10000.0
+	[[
+		anno::display_name("Water Distant Normal Length"),
+		anno::ui_order(32),
+		anno::in_group("Detail Normal Settings")
+	]],
+	float DefaultNearNormalStrength = 0.25
+	[[
+		anno::display_name("Default Near Normal Strength"),
+		anno::ui_order(32),
+		anno::in_group("Detail Normal Settings")
+	]],
+	float DefaultDistantNormalStrengthB = 0.25
+	[[
+		anno::display_name("Default Distant Normal StrengthB"),
+		anno::ui_order(32),
+		anno::in_group("Detail Normal Settings")
+	]],
+	float DefaultDistantNormalStrength = 0.3
+	[[
+		anno::display_name("Default Distant Normal Strength"),
+		anno::ui_order(32),
+		anno::in_group("Detail Normal Settings")
+	]],
+	float FarNormalFresnelPower = 9.0
+	[[
+		anno::display_name("Far Normal Fresnel Power"),
+		anno::ui_order(32),
+		anno::in_group("Detail Normal Settings")
+	]],
+	float WaveoverRockSteepness = 0.0
+	[[
+		anno::display_name("Wave over Rock Steepness"),
+		anno::ui_order(32),
+		anno::in_group("FluidSimulation")
+	]],
+	float4 SimLocation = float4(0.0,0.0,0.0,0.0)
+	[[
+		anno::display_name("SimLocation")
+	]],
+	float FluidSimSize = 2048.0
+	[[
+		anno::display_name("FluidSimSize")
+	]],
+	uniform texture_2d NormalAndHeight = texture_2d("./Textures/Black_1x1_EXR_Texture.exr",::tex::gamma_linear)
+	[[
+		anno::display_name("NormalAndHeight"),
+		anno::ui_order(32),
+		sampler_color()
+	]],
+	float FluidsimNormalStrength = 1.0
+	[[
+		anno::display_name("Fluidsim Normal Strength"),
+		anno::ui_order(32),
+		anno::in_group("FluidSimulation")
+	]],
+	uniform texture_2d Velocity = texture_2d("./Textures/Black_1x1_EXR_Texture.exr",::tex::gamma_linear)
+	[[
+		anno::display_name("Velocity"),
+		anno::ui_order(32),
+		sampler_color()
+	]],
+	float FluidsimVelocityEdgeFalloff = 0.2
+	[[
+		anno::display_name("Fluidsim Velocity EdgeFalloff"),
+		anno::ui_order(32),
+		anno::in_group("FluidSimulation")
+	]],
+	float FluidsimVelocityEdgeoffset = 0.02
+	[[
+		anno::display_name("Fluidsim Velocity Edgeoffset"),
+		anno::ui_order(32),
+		anno::in_group("FluidSimulation")
+	]],
+	float SimVelocityNormalStrength = 40.0
+	[[
+		anno::display_name("Sim Velocity Normal Strength"),
+		anno::ui_order(32),
+		anno::in_group("FluidSimulation")
+	]],
+	float SimFoamNormal = 1.0
+	[[
+		anno::display_name("Sim Foam Normal"),
+		anno::ui_order(32),
+		anno::in_group("FluidSimulation")
+	]],
+	float FoamAttachment = 0.4
+	[[
+		anno::display_name("Foam Attachment"),
+		anno::ui_order(32),
+		anno::in_group("General Foam")
+	]],
+	float SimFoamScale = 350.0
+	[[
+		anno::display_name("Sim Foam Scale"),
+		anno::ui_order(32),
+		anno::in_group("FluidSimulation")
+	]],
+	float SImFlowmapSpeed = 1.5
+	[[
+		anno::display_name("SIm Flowmap Speed"),
+		anno::ui_order(32),
+		anno::in_group("FluidSimulation")
+	]],
+	float WPOFlowmap = 6.0
+	[[
+		anno::display_name("WPO Flowmap"),
+		anno::ui_order(32),
+		anno::in_group("FluidSimulation")
+	]],
+	float FluidsimFlowDensity = 0.25
+	[[
+		anno::display_name("Fluidsim Flow Density"),
+		anno::ui_order(32),
+		anno::in_group("FluidSimulation")
+	]],
+	float SimulationFlowmapSpeed = 0.75
+	[[
+		anno::display_name("Simulation Flowmap Speed"),
+		anno::ui_order(32),
+		anno::in_group("FluidSimulation")
+	]],
+	float SimFoamContrast = 0.0
+	[[
+		anno::display_name("SimFoam Contrast"),
+		anno::ui_order(32),
+		anno::in_group("FluidSimulation")
+	]],
+	float SimFlowmapDetection = 1.5
+	[[
+		anno::display_name("Sim Flowmap Detection"),
+		anno::ui_order(32),
+		anno::in_group("FluidSimulation")
+	]],
+	float SimFoamDpethMin = 8.0
+	[[
+		anno::display_name("Sim Foam Dpeth Min"),
+		anno::ui_order(32),
+		anno::in_group("FluidSimulation")
+	]],
+	float4 FoamEmissive = float4(0.28744,1.0,0.1875,1.0)
+	[[
+		anno::display_name("Foam Emissive"),
+		anno::ui_order(32),
+		anno::in_group("General Foam")
+	]],
+	float VelocityDebug = 0.0
+	[[
+		anno::display_name("Velocity Debug"),
+		anno::ui_order(32),
+		anno::in_group("FluidSimulation")
+	]],
+	float4 WaterAlbedo = float4(0.85,0.85,0.85,0.5)
+	[[
+		anno::display_name("Water Albedo"),
+		anno::ui_order(32),
+		anno::in_group("Water Shading")
+	]],
+	float CausticsMaxIntensity = 1.0
+	[[
+		anno::display_name("CausticsMaxIntensity")
+	]],
+	float WaterOpacityMaskOffset = -24.0
+	[[
+		anno::display_name("Water Opacity Mask Offset"),
+		anno::ui_order(32),
+		anno::in_group("Opacity Mask")
+	]],
+	float WaterSpecular = 0.225
+	[[
+		anno::display_name("Water Specular"),
+		anno::ui_order(32),
+		anno::in_group("Water Shading")
+	]],
+	float CriticalAngleDot = 0.225
+	[[
+		anno::display_name("Critical Angle Dot"),
+		anno::ui_order(32),
+		anno::in_group("TwoSided Settings")
+	]],
+	float CriticalAngleWidth = 0.01
+	[[
+		anno::display_name("Critical Angle Width"),
+		anno::ui_order(32),
+		anno::in_group("TwoSided Settings")
+	]],
+	float TwoSidedSign = 1.0
+	[[
+		anno::hidden()
+	]],
+	float WaterRoughness = 0.02
+	[[
+		anno::display_name("Water Roughness"),
+		anno::ui_order(32),
+		anno::in_group("Water Shading")
+	]],
+	float WaterFresnelRoughness = 0.1
+	[[
+		anno::display_name("Water Fresnel Roughness"),
+		anno::ui_order(32),
+		anno::in_group("Water Shading")
+	]],
+	float FoamRoughness = 0.4
+	[[
+		anno::display_name("Foam Roughness"),
+		anno::ui_order(32),
+		anno::in_group("General Foam")
+	]],
+	float MaxFluidDisplacement = 1024.0
+	[[
+		anno::display_name("Max Fluid Displacement"),
+		anno::ui_order(32),
+		anno::in_group("FluidSimulation")
+	]],
+	float FluidDisplacementMultiplier = 1.0
+	[[
+		anno::display_name("Fluid Displacement Multiplier"),
+		anno::ui_order(32),
+		anno::in_group("FluidSimulation")
+	]],
+	float ShowSim = 1.0
+	[[
+		anno::display_name("ShowSim"),
+		anno::ui_order(32),
+		anno::in_group("FluidSimulation")
+	]],
+	float4 Scattering = float4(1.0,1.0,1.0,0.5)
+	[[
+		anno::display_name("Scattering"),
+		anno::ui_order(32)
+	]],
+	float4 Absorption = float4(10.0,150.0,350.0,8.0)
+	[[
+		anno::display_name("Absorption"),
+		anno::ui_order(32)
+	]],
+	float Anisotropy = 0.1
+	[[
+		anno::display_name("Anisotropy"),
+		anno::ui_order(32),
+		anno::in_group("Water Shading")
+	]])
+[[
+	dither_masked_off()
+]]
+ = 
+	let {
+	float Local223 = CustomExpression0();
+	float Local224 = math::lerp(Time,ManualTime,FreezeTime);
+	float3 Local225 = CustomExpression1(Local223,float2((::convert_to_left_hand(state::transform_point(state::coordinate_internal,state::coordinate_world,state::position()), true)*state::meters_per_scene_unit()*100.0).x,(::convert_to_left_hand(state::transform_point(state::coordinate_internal,state::coordinate_world,state::position()), true)*state::meters_per_scene_unit()*100.0).y),Local224);
+	float3 Local226 = CustomExpression4(Local225);
+	float2 Local227 = (float2((::convert_to_left_hand(state::transform_point(state::coordinate_internal,state::coordinate_world,state::position()), true)*state::meters_per_scene_unit()*100.0).x,(::convert_to_left_hand(state::transform_point(state::coordinate_internal,state::coordinate_world,state::position()), true)*state::meters_per_scene_unit()*100.0).y) - float2(float3(WaterArea.x,WaterArea.y,WaterArea.z).x,float3(WaterArea.x,WaterArea.y,WaterArea.z).y));
+	float2 Local228 = (Local227 / float2(WaterArea.z,WaterArea.w));
+	float2 Local229 = (float2(tex::width(WaterVelocityAndHeight),tex::height(WaterVelocityAndHeight)) - 1.0);
+	float2 Local230 = (Local229 / float2(tex::width(WaterVelocityAndHeight),tex::height(WaterVelocityAndHeight)));
+	float2 Local231 = (Local228 * Local230);
+	float2 Local232 = math::saturate(Local231);
+	float2 Local233 = (Local232 * float2(tex::width(WaterVelocityAndHeight),tex::height(WaterVelocityAndHeight)));
+	float2 Local234 = (Local233 - 0.5);
+	float2 Local235 = math::floor(Local234);
+	float2 Local236 = (Local235 + 0.5);
+	float2 Local237 = (Local236 / float2(tex::width(WaterVelocityAndHeight),tex::height(WaterVelocityAndHeight)));
+	float4 Local238 = tex::lookup_float4(WaterVelocityAndHeight,float2(Local237.x,1.0-Local237.y),tex::wrap_clamp,tex::wrap_clamp);
+	float2 Local239 = (1.0 / float2(tex::width(WaterVelocityAndHeight),tex::height(WaterVelocityAndHeight)));
+	float2 Local240 = (Local237 + float2(Local239.x,0.0));
+	float4 Local241 = tex::lookup_float4(WaterVelocityAndHeight,float2(Local240.x,1.0-Local240.y),tex::wrap_clamp,tex::wrap_clamp);
+	float2 Local242 = math::frac(Local234);
+	float4 Local243 = math::lerp(Local238,Local241,Local242.x);
+	float2 Local244 = (Local237 + float2(0.0,Local239.y));
+	float4 Local245 = tex::lookup_float4(WaterVelocityAndHeight,float2(Local244.x,1.0-Local244.y),tex::wrap_clamp,tex::wrap_clamp);
+	float2 Local246 = (Local237 + Local239);
+	float4 Local247 = tex::lookup_float4(WaterVelocityAndHeight,float2(Local246.x,1.0-Local246.y),tex::wrap_clamp,tex::wrap_clamp);
+	float4 Local248 = math::lerp(Local245,Local247,Local242.x);
+	float4 Local249 = math::lerp(Local243,Local248,Local242.y);
+	float Local250 = (TerrainMaxZ - TerrainMinZ);
+	float Local251 = (Local249.w * Local250);
+	float Local252 = (Local251 + TerrainMinZ);
+	float Local253 = (Local249.z - Local252);
+	float Local254 = math::max(Local253,0.0);
+	float Local255 = CustomExpression3(Local223,Local254);
+	float3 Local256 = (Local226 * Local255);
+	float Local257 = (Local224 * DefaultDisantWaterSpeed);
+	float Local258 = (Local257 * 0.1);
+	float Local259 = math::frac(Local258);
+	float Local260 = (::pixel_depth() - WaterDistantNormalOffset);
+	float Local261 = (Local260 / WaterDistantNormalLength);
+	float Local262 = math::saturate(Local261);
+	float Local263 = math::ceil(Local262);
+	float Local264 = math::saturate(Local263);
+	float Local265 = math::lerp(DefaultNearWaterScale,DefaultDistantWaterScale,Local264);
+	float3 Local266 = ((::convert_to_left_hand(state::transform_point(state::coordinate_internal,state::coordinate_world,state::position()), true)*state::meters_per_scene_unit()*100.0) / Local265);
+	float2 Local267 = (float2(Local259,Local259) + float2(Local266.x,Local266.y));
+	float4 Local268 = tex::lookup_float4(texture_2d("./Textures/T_Water_TilingNormal_With_Height_02_Softened.png",::tex::gamma_linear),float2(Local267.x,1.0-Local267.y),tex::wrap_repeat,tex::wrap_repeat);
+	float Local269 = (Local257 * -0.1);
+	float Local270 = math::frac(Local269);
+	float2 Local271 = (float2(Local266.x,Local266.y) + float2(0.4181,0.3548));
+	float2 Local272 = (Local271 / 1.618);
+	float2 Local273 = (float2(Local270,Local270) + Local272);
+	float4 Local274 = tex::lookup_float4(texture_2d("./Textures/T_Water_TilingNormal_With_Height_02_Softened.png",::tex::gamma_linear),float2(Local273.x,1.0-Local273.y),tex::wrap_repeat,tex::wrap_repeat);
+	float3 Local275 = (float3(Local268.x,Local268.y,Local268.z) + float3(Local274.x,Local274.y,Local274.z));
+	float2 Local276 = (float2(Local266.x,Local266.y) + float2(0.864861,0.148384));
+	float2 Local277 = (Local276 / 1.236094);
+	float2 Local278 = (float2(Local270,Local259) + Local277);
+	float4 Local279 = tex::lookup_float4(texture_2d("./Textures/T_Water_TilingNormal_With_Height_02_Softened.png",::tex::gamma_linear),float2(Local278.x,1.0-Local278.y),tex::wrap_repeat,tex::wrap_repeat);
+	float3 Local280 = (Local275 + float3(Local279.x,Local279.y,Local279.z));
+	float3 Local281 = (Local280 * 0.333333);
+	float Local282 = (Local281.z - 0.5);
+	float Local283 = (Local282 * Local262);
+	float Local284 = (Local283 * 0.0);
+	float3 Local285 = (Local284 * float3(0.0,0.0,1.0));
+	float3 Local286 = math::lerp(Local256,Local285,Local262);
+	float3 Local287 = (Local286 * 1.0);
+	float Local288 = (MaxFluidDisplacement * -1.0);
+	float3 Local289 = math::lerp(float3(1.0,1.0,1.0),float3(float2(WaveoverRockSteepness,WaveoverRockSteepness).x,float2(WaveoverRockSteepness,WaveoverRockSteepness).y,0.0),0.5);
+	float3 Local290 = (Local289 * Local286);
+	float3 Local291 = (Local290 + (::convert_to_left_hand(state::transform_point(state::coordinate_internal,state::coordinate_world,state::position()), true)*state::meters_per_scene_unit()*100.0));
+	float2 Local292 = (float2(Local291.x,Local291.y) - float2(SimLocation.x,SimLocation.y));
+	float2 Local293 = (Local292 / FluidSimSize);
+	float2 Local294 = (Local293 + 0.5);
+	float4 Local295 = tex::lookup_float4(NormalAndHeight,float2(Local294.x,1.0-Local294.y),tex::wrap_clamp,tex::wrap_clamp);
+	float Local296 = (FluidDisplacementMultiplier * ShowSim);
+	float Local297 = (Local295.z * Local296);
+	float Local298 = math::min(math::max(Local297,Local288),MaxFluidDisplacement);
+	float3 Local299 = (Local298 * float3(0.0,0.0,1.0));
+	float3 Local300 = (Local287 + Local299);
+	float Local317 = (Local243.z - (::convert_to_left_hand(state::transform_point(state::coordinate_internal,state::coordinate_world,state::position()), true)*state::meters_per_scene_unit()*100.0).z);
+	float3 Local318 = (Local317 * float3(0.0,0.0,1.0));
+	float3 Local319 = (Local300 + Local318);
+
+	float3 WorldPositionOffset_mdl = Local319;
+
+	float Local0 = CustomExpression0();
+	float Local1 = math::lerp(Time,ManualTime,FreezeTime);
+	float3 Local2 = CustomExpression1(Local0,float2((::convert_to_left_hand(state::transform_point(state::coordinate_internal,state::coordinate_world,state::position()), true)*state::meters_per_scene_unit()*100.0).x,(::convert_to_left_hand(state::transform_point(state::coordinate_internal,state::coordinate_world,state::position()), true)*state::meters_per_scene_unit()*100.0).y),Local1);
+	float3 Local3 = CustomExpression2(Local2);
+	float2 Local4 = (float2((::convert_to_left_hand(state::transform_point(state::coordinate_internal,state::coordinate_world,state::position()), true)*state::meters_per_scene_unit()*100.0).x,(::convert_to_left_hand(state::transform_point(state::coordinate_internal,state::coordinate_world,state::position()), true)*state::meters_per_scene_unit()*100.0).y) - float2(float3(WaterArea.x,WaterArea.y,WaterArea.z).x,float3(WaterArea.x,WaterArea.y,WaterArea.z).y));
+	float2 Local5 = (Local4 / float2(WaterArea.z,WaterArea.w));
+	float2 Local6 = (float2(tex::width(WaterVelocityAndHeight),tex::height(WaterVelocityAndHeight)) - 1.0);
+	float2 Local7 = (Local6 / float2(tex::width(WaterVelocityAndHeight),tex::height(WaterVelocityAndHeight)));
+	float2 Local8 = (Local5 * Local7);
+	float2 Local9 = math::saturate(Local8);
+	float2 Local10 = (Local9 * float2(tex::width(WaterVelocityAndHeight),tex::height(WaterVelocityAndHeight)));
+	float2 Local11 = (Local10 - 0.5);
+	float2 Local12 = math::floor(Local11);
+	float2 Local13 = (Local12 + 0.5);
+	float2 Local14 = (Local13 / float2(tex::width(WaterVelocityAndHeight),tex::height(WaterVelocityAndHeight)));
+	float4 Local15 = tex::lookup_float4(WaterVelocityAndHeight,float2(Local14.x,1.0-Local14.y),tex::wrap_clamp,tex::wrap_clamp);
+	float2 Local16 = (1.0 / float2(tex::width(WaterVelocityAndHeight),tex::height(WaterVelocityAndHeight)));
+	float2 Local17 = (Local14 + float2(Local16.x,0.0));
+	float4 Local18 = tex::lookup_float4(WaterVelocityAndHeight,float2(Local17.x,1.0-Local17.y),tex::wrap_clamp,tex::wrap_clamp);
+	float2 Local19 = math::frac(Local11);
+	float4 Local20 = math::lerp(Local15,Local18,Local19.x);
+	float2 Local21 = (Local14 + float2(0.0,Local16.y));
+	float4 Local22 = tex::lookup_float4(WaterVelocityAndHeight,float2(Local21.x,1.0-Local21.y),tex::wrap_clamp,tex::wrap_clamp);
+	float2 Local23 = (Local14 + Local16);
+	float4 Local24 = tex::lookup_float4(WaterVelocityAndHeight,float2(Local23.x,1.0-Local23.y),tex::wrap_clamp,tex::wrap_clamp);
+	float4 Local25 = math::lerp(Local22,Local24,Local19.x);
+	float4 Local26 = math::lerp(Local20,Local25,Local19.y);
+	float Local27 = (TerrainMaxZ - TerrainMinZ);
+	float Local28 = (Local26.w * Local27);
+	float Local29 = (Local28 + TerrainMinZ);
+	float Local30 = (Local26.z - Local29);
+	float Local31 = math::max(Local30,0.0);
+	float Local32 = CustomExpression3(Local0,Local31);
+	float3 Local33 = math::lerp(float3(0.0,0.0,1.0),Local3,Local32);
+	float Local34 = (Local1 * DefaultDisantWaterSpeed);
+	float Local35 = (Local34 * 0.1);
+	float Local36 = math::frac(Local35);
+	float Local37 = (::pixel_depth() - WaterDistantNormalOffset);
+	float Local38 = (Local37 / WaterDistantNormalLength);
+	float Local39 = math::saturate(Local38);
+	float Local40 = math::ceil(Local39);
+	float Local41 = math::saturate(Local40);
+	float Local42 = math::lerp(DefaultNearWaterScale,DefaultDistantWaterScale,Local41);
+	float3 Local43 = ((::convert_to_left_hand(state::transform_point(state::coordinate_internal,state::coordinate_world,state::position()), true)*state::meters_per_scene_unit()*100.0) / Local42);
+	float2 Local44 = (float2(Local36,Local36) + float2(Local43.x,Local43.y));
+	float4 Local45 = tex::lookup_float4(texture_2d("./Textures/T_Water_TilingNormal_With_Height_02_Softened.png",::tex::gamma_linear),float2(Local44.x,1.0-Local44.y),tex::wrap_repeat,tex::wrap_repeat);
+	float Local46 = (Local34 * -0.1);
+	float Local47 = math::frac(Local46);
+	float2 Local48 = (float2(Local43.x,Local43.y) + float2(0.4181,0.3548));
+	float2 Local49 = (Local48 / 1.618);
+	float2 Local50 = (float2(Local47,Local47) + Local49);
+	float4 Local51 = tex::lookup_float4(texture_2d("./Textures/T_Water_TilingNormal_With_Height_02_Softened.png",::tex::gamma_linear),float2(Local50.x,1.0-Local50.y),tex::wrap_repeat,tex::wrap_repeat);
+	float3 Local52 = (float3(Local45.x,Local45.y,Local45.z) + float3(Local51.x,Local51.y,Local51.z));
+	float2 Local53 = (float2(Local43.x,Local43.y) + float2(0.864861,0.148384));
+	float2 Local54 = (Local53 / 1.236094);
+	float2 Local55 = (float2(Local47,Local36) + Local54);
+	float4 Local56 = tex::lookup_float4(texture_2d("./Textures/T_Water_TilingNormal_With_Height_02_Softened.png",::tex::gamma_linear),float2(Local55.x,1.0-Local55.y),tex::wrap_repeat,tex::wrap_repeat);
+	float3 Local57 = (Local52 + float3(Local56.x,Local56.y,Local56.z));
+	float3 Local58 = (Local57 * 0.333333);
+	float2 Local59 = (float2(Local58.x,Local58.y) - 0.5);
+	float Local60 = (::pixel_depth() / WaterDistantNormalOffset);
+	float Local61 = math::saturate(Local60);
+	float Local62 = math::lerp(DefaultNearNormalStrength,0.0,Local61);
+	float2 Local63 = (Local59 * Local62);
+	float3 Local64 = (Local33 + float3(Local63.x,Local63.y,0.0));
+	float Local65 = ::fresnel(FarNormalFresnelPower, 0.04, float3(0.0,0.0,1.0));
+	float Local66 = math::lerp(DefaultDistantNormalStrengthB,DefaultDistantNormalStrength,Local65);
+	float Local67 = (1.0 / Local66);
+	float3 Local68 = math::normalize(float3(Local59.x,Local59.y,Local67));
+	float3 Local69 = math::lerp(Local64,Local68,Local39);
+	float3 Local70 = math::lerp(float3(1.0,1.0,1.0),float3(float2(WaveoverRockSteepness,WaveoverRockSteepness).x,float2(WaveoverRockSteepness,WaveoverRockSteepness).y,0.0),0.5);
+	float3 Local71 = CustomExpression4(Local2);
+	float3 Local72 = (Local71 * Local32);
+	float Local73 = (Local58.z - 0.5);
+	float Local74 = (Local73 * Local39);
+	float Local75 = (Local74 * 0.0);
+	float3 Local76 = (Local75 * float3(0.0,0.0,1.0));
+	float3 Local77 = math::lerp(Local72,Local76,Local39);
+	float3 Local78 = (Local70 * Local77);
+	float3 Local79 = (Local78 + (::convert_to_left_hand(state::transform_point(state::coordinate_internal,state::coordinate_world,state::position()), true)*state::meters_per_scene_unit()*100.0));
+	float2 Local80 = (float2(Local79.x,Local79.y) - float2(SimLocation.x,SimLocation.y));
+	float2 Local81 = (Local80 / FluidSimSize);
+	float2 Local82 = (Local81 + 0.5);
+	float4 Local83 = tex::lookup_float4(NormalAndHeight,float2(Local82.x,1.0-Local82.y),tex::wrap_clamp,tex::wrap_clamp);
+	float2 Local84 = (float2(float3(Local83.x,Local83.y,Local83.z).x,float3(Local83.x,Local83.y,Local83.z).y) * FluidsimNormalStrength);
+	float3 Local85 = (Local69 + float3(Local84.x,Local84.y,0.0));
+	float2 Local86 = (float2((::convert_to_left_hand(state::transform_point(state::coordinate_internal,state::coordinate_world,state::position()), true)*state::meters_per_scene_unit()*100.0).x,(::convert_to_left_hand(state::transform_point(state::coordinate_internal,state::coordinate_world,state::position()), true)*state::meters_per_scene_unit()*100.0).y) - float2(SimLocation.x,SimLocation.y));
+	float2 Local87 = (Local86 / FluidSimSize);
+	float2 Local88 = (Local87 + 0.5);
+	float4 Local89 = tex::lookup_float4(Velocity,float2(Local88.x,1.0-Local88.y),tex::wrap_clamp,tex::wrap_clamp);
+	float2 Local90 = (Local88 - 0.5);
+	float2 Local91 = math::abs(Local90);
+	float Local92 = (FluidsimVelocityEdgeFalloff * 2.0);
+	float Local93 = (1.0 - Local92);
+	float Local94 = (Local93 * 0.5);
+	float2 Local95 = (Local91 - Local94);
+	float2 Local96 = math::max(Local95,float2(0.0,0.0));
+	float2 Local97 = (Local96 - 0.0);
+	float Local98 = math::length(Local97);
+	float Local99 = (Local98 / FluidsimVelocityEdgeFalloff);
+	float Local100 = math::min(math::max(Local99,0.0),1.0);
+	float Local101 = (1.0 - Local100);
+	float Local102 = (Local101 - FluidsimVelocityEdgeoffset);
+	float Local103 = (1.0 - FluidsimVelocityEdgeoffset);
+	float Local104 = (Local102 / Local103);
+	float Local105 = math::min(math::max(Local104,0.0),1.0);
+	float3 Local106 = (float3(Local89.x,Local89.y,Local89.z) * Local105);
+	float2 Local107 = (float2(Local106.x,Local106.y) - 0.0);
+	float Local108 = math::length(Local107);
+	float Local109 = (Local108 / SimVelocityNormalStrength);
+	float Local110 = (Local109 + SimFoamNormal);
+	float3 Local111 = math::lerp((::convert_to_left_hand(state::transform_point(state::coordinate_internal,state::coordinate_world,state::position()), true)*state::meters_per_scene_unit()*100.0),(::convert_to_left_hand(state::transform_point(state::coordinate_internal,state::coordinate_world,state::position()), true)*state::meters_per_scene_unit()*100.0),FoamAttachment);
+	float3 Local112 = (Local111 / SimFoamScale);
+	float Local113 = (Local1 * SImFlowmapSpeed);
+	float Local114 = (Local113 - 0.5);
+	float Local115 = math::frac(Local114);
+	float3 Local116 = ((::convert_to_left_hand(state::transform_point(state::coordinate_internal,state::coordinate_world,state::position()), true)*state::meters_per_scene_unit()*100.0) - float3(SimLocation.x,SimLocation.y,SimLocation.z));
+	float3 Local117 = (Local116 + Local77);
+	float3 Local118 = (Local117 / FluidSimSize);
+	float3 Local119 = (Local118 + 0.5);
+	float2 Local120 = math::saturate(float2(Local119.x,Local119.y));
+	float4 Local121 = tex::lookup_float4(texture_2d("./Textures/WaterDistanceField.png",::tex::gamma_linear),float2(Local120.x,1.0-Local120.y),tex::wrap_clamp,tex::wrap_clamp);
+	float Local122 = (Local121.x * 0.0);
+	float Local123 = math::saturate(Local122);
+	float2 Local124 = (Local123 * float2(Local77.x,Local77.y));
+	float2 Local125 = (Local124 * WPOFlowmap);
+	float2 Local126 = (Local125 / 1000.0);
+	float Local127 = math::dot(Local106, Local106);
+	float3 Local128 = math::normalize(Local106);
+	float4 Local129 = ((math::abs(Local127 - 0.000001) > 0.00001) ? (Local127 >= 0.000001 ? float4(Local128.x,Local128.y,Local128.z,0.0) : float4(float3(0.0,0.0,0.0).x,float3(0.0,0.0,0.0).y,float3(0.0,0.0,0.0).z,1.0)) : float4(float3(0.0,0.0,0.0).x,float3(0.0,0.0,0.0).y,float3(0.0,0.0,0.0).z,1.0));
+	float Local130 = (Local108 / 100.0);
+	float Local131 = (Local130 * FluidsimFlowDensity);
+	float Local132 = CustomExpression5(Local131);
+	float3 Local133 = (float3(Local129.x,Local129.y,Local129.z) * Local132);
+	float2 Local134 = (float2(Local133.x,Local133.y) * SimulationFlowmapSpeed);
+	float2 Local135 = (Local126 + Local134);
+	float2 Local136 = (Local135 * float2(1.0,-1.0));
+	float2 Local137 = (Local136 * float2(-1.0,1.0));
+	float2 Local138 = (Local115 * Local137);
+	float2 Local139 = (float2(Local112.x,Local112.y) + Local138);
+	float2 Local140 = math::frac(Local139);
+	float2 Local141 = (Local140 + float2(0.5,0.5));
+	float4 Local149 = ::unpack_normal_map(tex::lookup_float4(texture_2d("./Textures/T_WaterFlow_01_Foam_Tiled_N.png",::tex::gamma_linear),float2(Local141.x,1.0-Local141.y),tex::wrap_repeat,tex::wrap_repeat));
+	float Local150 = math::frac(Local113);
+	float2 Local151 = (Local137 * Local150);
+	float2 Local152 = (Local151 + float2(Local112.x,Local112.y));
+	float4 Local153 = ::unpack_normal_map(tex::lookup_float4(texture_2d("./Textures/T_WaterFlow_01_Foam_Tiled_N.png",::tex::gamma_linear),float2(Local152.x,1.0-Local152.y),tex::wrap_repeat,tex::wrap_repeat));
+	float Local154 = (Local150 / 1.0);
+	float Local155 = math::frac(Local154);
+	float Local156 = (Local155 * 2.0);
+	float Local157 = (1.0 - Local155);
+	float Local158 = (2.0 * Local157);
+	float Local159 = math::floor(Local156);
+	float Local160 = math::lerp(Local156,Local158,Local159);
+	float3 Local161 = math::lerp(float3(Local149.x,Local149.y,Local149.z),float3(Local153.x,Local153.y,Local153.z),Local160);
+	float3 Local162 = (float3(float2(Local110,Local110).x,float2(Local110,Local110).y,0.0) * Local161);
+	float Local163 = (0.0 - SimFoamContrast);
+	float Local164 = (SimFoamContrast + 1.0);
+	float4 Local165 = tex::lookup_float4(texture_2d("./Textures/T_WaterFlow_01_Foam_Tiled.png",::tex::gamma_srgb),float2(Local141.x,1.0-Local141.y),tex::wrap_repeat,tex::wrap_repeat);
+	float4 Local166 = tex::lookup_float4(texture_2d("./Textures/T_WaterFlow_01_Foam_Tiled.png",::tex::gamma_srgb),float2(Local152.x,1.0-Local152.y),tex::wrap_repeat,tex::wrap_repeat);
+	float4 Local167 = math::lerp(float4(float3(Local165.x,Local165.y,Local165.z).x,float3(Local165.x,Local165.y,Local165.z).y,float3(Local165.x,Local165.y,Local165.z).z,Local165.w),float4(float3(Local166.x,Local166.y,Local166.z).x,float3(Local166.x,Local166.y,Local166.z).y,float3(Local166.x,Local166.y,Local166.z).z,Local166.w),Local160);
+	float Local168 = (float3(Local167.x,Local167.y,Local167.z).x - 1.0);
+	float Local169 = (Local83.w / SimFlowmapDetection);
+	float Local170 = CustomExpression7(Local169);
+	float Local171 = math::saturate(Local170);
+	float Local172 = (Local171 * 2.0);
+	float Local173 = (Local168 + Local172);
+	float Local174 = math::min(math::max(Local173,0.0),1.0);
+	float Local175 = math::lerp(Local163,Local164,Local174);
+	float Local176 = math::min(math::max(Local175,0.0),1.0);
+	float Local177 = MaterialExpressionSceneDepthWithoutWater(ScreenAlignedPosition(GetScreenPosition(Parameters)), 1000000.0);
+	float Local178 = (Local177 - ::pixel_depth());
+	float Local179 = (Local178 / SimFoamDpethMin);
+	float Local180 = math::saturate(Local179);
+	float Local181 = (Local176 * Local180);
+	float Local182 = math::saturate(Local181);
+	float Local183 = (Local182 * 0.0);
+	float3 Local184 = (Local162 * Local183);
+	float3 Local185 = (Local85 + Local184);
+
+	float3 Normal_mdl = Local185;
+
+	float3 Local186 = (float3(FoamEmissive.x,FoamEmissive.y,FoamEmissive.z) * FoamEmissive.w);
+	float3 Local187 = float3(0);
+	float3 Local188 = (Local186 * Local187);
+	float3 Local189 = (Local188 * Local183);
+	float3 Local190 = (0.0 + Local189);
+	float3 Local191 = math::abs(Local106);
+	float3 Local192 = (Local191 * VelocityDebug);
+	float3 Local193 = (float3(0.0,0.0,0.0) + Local192);
+	float3 Local194 = (Local190 + Local193);
+	float3 Local195 = (float3(WaterAlbedo.x,WaterAlbedo.y,WaterAlbedo.z) / CausticsMaxIntensity);
+	float Local196 = (Local30 - WaterOpacityMaskOffset);
+	float Local197 = math::saturate(Local196);
+	float Local198 = (Local26.z + Local83.z);
+	float Local199 = (Local198 - Local29);
+	float Local200 = math::max(Local199,0.0);
+	float Local201 = math::saturate(Local200);
+	float Local202 = math::max(Local197,Local201);
+	float Local203 = math::lerp(-1.0,1.0,Local202);
+	float3 Local204 = CustomExpression8(Local195,Local203);
+	float Local205 = math::dot(::pixel_normal_world_space(true), ::camera_vector(true));
+	float Local206 = (CriticalAngleDot - Local205);
+	float Local207 = (Local206 / CriticalAngleWidth);
+	float Local208 = math::saturate(Local207);
+	float Local209 = math::saturate(TwoSidedSign);
+	float Local210 = math::lerp(Local208,0.0,Local209);
+	float Local211 = math::lerp(WaterSpecular,1.0,Local210);
+	float Local212 = math::saturate(Local203);
+	float Local213 = (Local211 * Local212);
+	float Local214 = ::fresnel(5.0, 0.0, ::pixel_normal_world_space(true));
+	float Local215 = math::lerp(WaterRoughness,WaterFresnelRoughness,Local214);
+	float Local216 = (FoamRoughness * Local183);
+	float Local217 = (Local215 + Local216);
+
+	float3 EmissiveColor_mdl = Local194;
+	float OpacityMask_mdl = (1.0 - 0.3333) < 0.0f ? 0.0f : 1.0f;
+	float3 BaseColor_mdl = Local204;
+	float Metallic_mdl = 0.0;
+	float Specular_mdl = Local213;
+	float Roughness_mdl = Local217;
+
+	float2 Local410 = (float2((::convert_to_left_hand(state::transform_point(state::coordinate_internal,state::coordinate_world,state::position()), true)*state::meters_per_scene_unit()*100.0).x,(::convert_to_left_hand(state::transform_point(state::coordinate_internal,state::coordinate_world,state::position()), true)*state::meters_per_scene_unit()*100.0).y) - float2(float3(WaterArea.x,WaterArea.y,WaterArea.z).x,float3(WaterArea.x,WaterArea.y,WaterArea.z).y));
+	float2 Local411 = (Local410 / float2(WaterArea.z,WaterArea.w));
+	float2 Local412 = (float2(tex::width(WaterVelocityAndHeight),tex::height(WaterVelocityAndHeight)) - 1.0);
+	float2 Local413 = (Local412 / float2(tex::width(WaterVelocityAndHeight),tex::height(WaterVelocityAndHeight)));
+	float2 Local414 = (Local411 * Local413);
+	float2 Local415 = math::saturate(Local414);
+	float2 Local416 = (Local415 * float2(tex::width(WaterVelocityAndHeight),tex::height(WaterVelocityAndHeight)));
+	float2 Local417 = (Local416 - 0.5);
+	float2 Local418 = math::floor(Local417);
+	float2 Local419 = (Local418 + 0.5);
+	float2 Local420 = (Local419 / float2(tex::width(WaterVelocityAndHeight),tex::height(WaterVelocityAndHeight)));
+	float4 Local421 = tex::lookup_float4(WaterVelocityAndHeight,float2(Local420.x,1.0-Local420.y),tex::wrap_clamp,tex::wrap_clamp);
+	float2 Local422 = (1.0 / float2(tex::width(WaterVelocityAndHeight),tex::height(WaterVelocityAndHeight)));
+	float2 Local423 = (Local420 + float2(Local422.x,0.0));
+	float4 Local424 = tex::lookup_float4(WaterVelocityAndHeight,float2(Local423.x,1.0-Local423.y),tex::wrap_clamp,tex::wrap_clamp);
+	float2 Local425 = math::frac(Local417);
+	float2 Local426 = (Local420 + float2(0.0,Local422.y));
+	float4 Local427 = tex::lookup_float4(WaterVelocityAndHeight,float2(Local426.x,1.0-Local426.y),tex::wrap_clamp,tex::wrap_clamp);
+	float2 Local428 = (Local420 + Local422);
+	float4 Local429 = tex::lookup_float4(WaterVelocityAndHeight,float2(Local428.x,1.0-Local428.y),tex::wrap_clamp,tex::wrap_clamp);
+	float4 Local430 = math::lerp(Local424,Local429,Local425.y);
+	float Local431 = (TerrainMaxZ - TerrainMinZ);
+	float Local432 = (Local430.w * Local431);
+	float Local433 = (Local432 + TerrainMinZ);
+	float Local434 = (Local430.z - Local433);
+	float Local435 = (Local434 - WaterOpacityMaskOffset);
+	float Local436 = math::saturate(Local435);
+	float4 Local437 = math::lerp(Local421,Local424,Local425.x);
+	float4 Local438 = math::lerp(Local427,Local429,Local425.x);
+	float4 Local439 = math::lerp(Local437,Local438,Local425.y);
+	float3 Local440 = math::lerp(float3(1.0,1.0,1.0),float3(float2(WaveoverRockSteepness,WaveoverRockSteepness).x,float2(WaveoverRockSteepness,WaveoverRockSteepness).y,0.0),0.5);
+	float Local441 = CustomExpression0();
+	float Local442 = math::lerp(Time,ManualTime,FreezeTime);
+	float3 Local443 = CustomExpression1(Local441,float2((::convert_to_left_hand(state::transform_point(state::coordinate_internal,state::coordinate_world,state::position()), true)*state::meters_per_scene_unit()*100.0).x,(::convert_to_left_hand(state::transform_point(state::coordinate_internal,state::coordinate_world,state::position()), true)*state::meters_per_scene_unit()*100.0).y),Local442);
+	float3 Local444 = CustomExpression4(Local443);
+	float4 Local445 = math::lerp(Local421,Local427,Local425.y);
+	float Local446 = (Local445.w * Local431);
+	float Local447 = (Local446 + TerrainMinZ);
+	float Local448 = (Local445.z - Local447);
+	float Local449 = math::max(Local448,0.0);
+	float Local450 = CustomExpression3(Local441,Local449);
+	float3 Local451 = (Local444 * Local450);
+	float Local452 = (Local442 * DefaultDisantWaterSpeed);
+	float Local453 = (Local452 * 0.1);
+	float Local454 = math::frac(Local453);
+	float Local455 = (::pixel_depth() - WaterDistantNormalOffset);
+	float Local456 = (Local455 / WaterDistantNormalLength);
+	float Local457 = math::saturate(Local456);
+	float Local458 = math::ceil(Local457);
+	float Local459 = math::saturate(Local458);
+	float Local460 = math::lerp(DefaultNearWaterScale,DefaultDistantWaterScale,Local459);
+	float3 Local461 = ((::convert_to_left_hand(state::transform_point(state::coordinate_internal,state::coordinate_world,state::position()), true)*state::meters_per_scene_unit()*100.0) / Local460);
+	float2 Local462 = (float2(Local454,Local454) + float2(Local461.x,Local461.y));
+	float4 Local463 = tex::lookup_float4(texture_2d("./Textures/T_Water_TilingNormal_With_Height_02_Softened.png",::tex::gamma_linear),float2(Local462.x,1.0-Local462.y),tex::wrap_repeat,tex::wrap_repeat);
+	float Local464 = (Local452 * -0.1);
+	float Local465 = math::frac(Local464);
+	float2 Local466 = (float2(Local461.x,Local461.y) + float2(0.4181,0.3548));
+	float2 Local467 = (Local466 / 1.618);
+	float2 Local468 = (float2(Local465,Local465) + Local467);
+	float4 Local469 = tex::lookup_float4(texture_2d("./Textures/T_Water_TilingNormal_With_Height_02_Softened.png",::tex::gamma_linear),float2(Local468.x,1.0-Local468.y),tex::wrap_repeat,tex::wrap_repeat);
+	float3 Local470 = (float3(Local463.x,Local463.y,Local463.z) + float3(Local469.x,Local469.y,Local469.z));
+	float2 Local471 = (float2(Local461.x,Local461.y) + float2(0.864861,0.148384));
+	float2 Local472 = (Local471 / 1.236094);
+	float2 Local473 = (float2(Local465,Local454) + Local472);
+	float4 Local474 = tex::lookup_float4(texture_2d("./Textures/T_Water_TilingNormal_With_Height_02_Softened.png",::tex::gamma_linear),float2(Local473.x,1.0-Local473.y),tex::wrap_repeat,tex::wrap_repeat);
+	float3 Local475 = (Local470 + float3(Local474.x,Local474.y,Local474.z));
+	float3 Local476 = (Local475 * 0.333333);
+	float Local477 = (Local476.z - 0.5);
+	float Local478 = (Local477 * Local457);
+	float Local479 = (Local478 * 0.0);
+	float3 Local480 = (Local479 * float3(0.0,0.0,1.0));
+	float3 Local481 = math::lerp(Local451,Local480,Local457);
+	float3 Local482 = (Local440 * Local481);
+	float3 Local483 = (Local482 + (::convert_to_left_hand(state::transform_point(state::coordinate_internal,state::coordinate_world,state::position()), true)*state::meters_per_scene_unit()*100.0));
+	float2 Local484 = (float2(Local483.x,Local483.y) - float2(SimLocation.x,SimLocation.y));
+	float2 Local485 = (Local484 / FluidSimSize);
+	float2 Local486 = (Local485 + 0.5);
+	float4 Local487 = tex::lookup_float4(NormalAndHeight,float2(Local486.x,1.0-Local486.y),tex::wrap_clamp,tex::wrap_clamp);
+	float Local488 = (Local439.z + Local487.z);
+	float Local489 = (Local439.w * Local431);
+	float Local490 = (Local489 + TerrainMinZ);
+	float Local491 = (Local488 - Local490);
+	float Local492 = math::max(Local491,0.0);
+	float Local493 = math::saturate(Local492);
+	float Local494 = math::max(Local436,Local493);
+	float Local495 = math::lerp(-1.0,1.0,Local494);
+	float Local496 = math::saturate(Local495);
+	float3 Local497 = (float3(Scattering.x,Scattering.y,Scattering.z) * Scattering.w);
+	float3 Local498 = (0.0 + Local497);
+	float3 Local499 = (Local498 / 1000.0);
+	float Local500 = math::saturate(TwoSidedSign);
+	float3 Local501 = (Local499 * Local500);
+	float3 Local502 = (Local496 * Local501);
+
+	float3 GetSingleLayerWaterMaterialOutput0_mdl = Local502;
+
+	float2 Local503 = (float2((::convert_to_left_hand(state::transform_point(state::coordinate_internal,state::coordinate_world,state::position()), true)*state::meters_per_scene_unit()*100.0).x,(::convert_to_left_hand(state::transform_point(state::coordinate_internal,state::coordinate_world,state::position()), true)*state::meters_per_scene_unit()*100.0).y) - float2(float3(WaterArea.x,WaterArea.y,WaterArea.z).x,float3(WaterArea.x,WaterArea.y,WaterArea.z).y));
+	float2 Local504 = (Local503 / float2(WaterArea.z,WaterArea.w));
+	float2 Local505 = (float2(tex::width(WaterVelocityAndHeight),tex::height(WaterVelocityAndHeight)) - 1.0);
+	float2 Local506 = (Local505 / float2(tex::width(WaterVelocityAndHeight),tex::height(WaterVelocityAndHeight)));
+	float2 Local507 = (Local504 * Local506);
+	float2 Local508 = math::saturate(Local507);
+	float2 Local509 = (Local508 * float2(tex::width(WaterVelocityAndHeight),tex::height(WaterVelocityAndHeight)));
+	float2 Local510 = (Local509 - 0.5);
+	float2 Local511 = math::floor(Local510);
+	float2 Local512 = (Local511 + 0.5);
+	float2 Local513 = (Local512 / float2(tex::width(WaterVelocityAndHeight),tex::height(WaterVelocityAndHeight)));
+	float4 Local514 = tex::lookup_float4(WaterVelocityAndHeight,float2(Local513.x,1.0-Local513.y),tex::wrap_clamp,tex::wrap_clamp);
+	float2 Local515 = (1.0 / float2(tex::width(WaterVelocityAndHeight),tex::height(WaterVelocityAndHeight)));
+	float2 Local516 = (Local513 + float2(Local515.x,0.0));
+	float4 Local517 = tex::lookup_float4(WaterVelocityAndHeight,float2(Local516.x,1.0-Local516.y),tex::wrap_clamp,tex::wrap_clamp);
+	float2 Local518 = math::frac(Local510);
+	float2 Local519 = (Local513 + float2(0.0,Local515.y));
+	float4 Local520 = tex::lookup_float4(WaterVelocityAndHeight,float2(Local519.x,1.0-Local519.y),tex::wrap_clamp,tex::wrap_clamp);
+	float2 Local521 = (Local513 + Local515);
+	float4 Local522 = tex::lookup_float4(WaterVelocityAndHeight,float2(Local521.x,1.0-Local521.y),tex::wrap_clamp,tex::wrap_clamp);
+	float4 Local523 = math::lerp(Local517,Local522,Local518.y);
+	float Local524 = (TerrainMaxZ - TerrainMinZ);
+	float Local525 = (Local523.w * Local524);
+	float Local526 = (Local525 + TerrainMinZ);
+	float Local527 = (Local523.z - Local526);
+	float Local528 = (Local527 - WaterOpacityMaskOffset);
+	float Local529 = math::saturate(Local528);
+	float4 Local530 = math::lerp(Local514,Local517,Local518.x);
+	float4 Local531 = math::lerp(Local520,Local522,Local518.x);
+	float4 Local532 = math::lerp(Local530,Local531,Local518.y);
+	float3 Local533 = math::lerp(float3(1.0,1.0,1.0),float3(float2(WaveoverRockSteepness,WaveoverRockSteepness).x,float2(WaveoverRockSteepness,WaveoverRockSteepness).y,0.0),0.5);
+	float Local534 = CustomExpression0();
+	float Local535 = math::lerp(Time,ManualTime,FreezeTime);
+	float3 Local536 = CustomExpression1(Local534,float2((::convert_to_left_hand(state::transform_point(state::coordinate_internal,state::coordinate_world,state::position()), true)*state::meters_per_scene_unit()*100.0).x,(::convert_to_left_hand(state::transform_point(state::coordinate_internal,state::coordinate_world,state::position()), true)*state::meters_per_scene_unit()*100.0).y),Local535);
+	float3 Local537 = CustomExpression4(Local536);
+	float4 Local538 = math::lerp(Local514,Local520,Local518.y);
+	float Local539 = (Local538.w * Local524);
+	float Local540 = (Local539 + TerrainMinZ);
+	float Local541 = (Local538.z - Local540);
+	float Local542 = math::max(Local541,0.0);
+	float Local543 = CustomExpression3(Local534,Local542);
+	float3 Local544 = (Local537 * Local543);
+	float Local545 = (Local535 * DefaultDisantWaterSpeed);
+	float Local546 = (Local545 * 0.1);
+	float Local547 = math::frac(Local546);
+	float Local548 = (::pixel_depth() - WaterDistantNormalOffset);
+	float Local549 = (Local548 / WaterDistantNormalLength);
+	float Local550 = math::saturate(Local549);
+	float Local551 = math::ceil(Local550);
+	float Local552 = math::saturate(Local551);
+	float Local553 = math::lerp(DefaultNearWaterScale,DefaultDistantWaterScale,Local552);
+	float3 Local554 = ((::convert_to_left_hand(state::transform_point(state::coordinate_internal,state::coordinate_world,state::position()), true)*state::meters_per_scene_unit()*100.0) / Local553);
+	float2 Local555 = (float2(Local547,Local547) + float2(Local554.x,Local554.y));
+	float4 Local556 = tex::lookup_float4(texture_2d("./Textures/T_Water_TilingNormal_With_Height_02_Softened.png",::tex::gamma_linear),float2(Local555.x,1.0-Local555.y),tex::wrap_repeat,tex::wrap_repeat);
+	float Local557 = (Local545 * -0.1);
+	float Local558 = math::frac(Local557);
+	float2 Local559 = (float2(Local554.x,Local554.y) + float2(0.4181,0.3548));
+	float2 Local560 = (Local559 / 1.618);
+	float2 Local561 = (float2(Local558,Local558) + Local560);
+	float4 Local562 = tex::lookup_float4(texture_2d("./Textures/T_Water_TilingNormal_With_Height_02_Softened.png",::tex::gamma_linear),float2(Local561.x,1.0-Local561.y),tex::wrap_repeat,tex::wrap_repeat);
+	float3 Local563 = (float3(Local556.x,Local556.y,Local556.z) + float3(Local562.x,Local562.y,Local562.z));
+	float2 Local564 = (float2(Local554.x,Local554.y) + float2(0.864861,0.148384));
+	float2 Local565 = (Local564 / 1.236094);
+	float2 Local566 = (float2(Local558,Local547) + Local565);
+	float4 Local567 = tex::lookup_float4(texture_2d("./Textures/T_Water_TilingNormal_With_Height_02_Softened.png",::tex::gamma_linear),float2(Local566.x,1.0-Local566.y),tex::wrap_repeat,tex::wrap_repeat);
+	float3 Local568 = (Local563 + float3(Local567.x,Local567.y,Local567.z));
+	float3 Local569 = (Local568 * 0.333333);
+	float Local570 = (Local569.z - 0.5);
+	float Local571 = (Local570 * Local550);
+	float Local572 = (Local571 * 0.0);
+	float3 Local573 = (Local572 * float3(0.0,0.0,1.0));
+	float3 Local574 = math::lerp(Local544,Local573,Local550);
+	float3 Local575 = (Local533 * Local574);
+	float3 Local576 = (Local575 + (::convert_to_left_hand(state::transform_point(state::coordinate_internal,state::coordinate_world,state::position()), true)*state::meters_per_scene_unit()*100.0));
+	float2 Local577 = (float2(Local576.x,Local576.y) - float2(SimLocation.x,SimLocation.y));
+	float2 Local578 = (Local577 / FluidSimSize);
+	float2 Local579 = (Local578 + 0.5);
+	float4 Local580 = tex::lookup_float4(NormalAndHeight,float2(Local579.x,1.0-Local579.y),tex::wrap_clamp,tex::wrap_clamp);
+	float Local581 = (Local532.z + Local580.z);
+	float Local582 = (Local532.w * Local524);
+	float Local583 = (Local582 + TerrainMinZ);
+	float Local584 = (Local581 - Local583);
+	float Local585 = math::max(Local584,0.0);
+	float Local586 = math::saturate(Local585);
+	float Local587 = math::max(Local529,Local586);
+	float Local588 = math::lerp(-1.0,1.0,Local587);
+	float Local589 = math::saturate(Local588);
+	float3 Local590 = (1.0 / float3(Absorption.x,Absorption.y,Absorption.z));
+	float3 Local591 = (Local590 / Absorption.w);
+	float Local592 = math::saturate(TwoSidedSign);
+	float3 Local593 = (Local591 * Local592);
+	float3 Local594 = (Local589 * Local593);
+
+	float3 GetSingleLayerWaterMaterialOutput1_mdl = Local594;
+
+
+	float GetSingleLayerWaterMaterialOutput2_mdl = Anisotropy;
+
+
+	float GetSingleLayerWaterMaterialOutput3_mdl = 1.0;
+
+	} in
+		::OmniUe4Base(
+			base_color: BaseColor_mdl,
+			metallic: Metallic_mdl,
+			roughness: Roughness_mdl,
+			specular: Specular_mdl,
+			normal: Normal_mdl,
+			opacity: OpacityMask_mdl,
+			emissive_color: EmissiveColor_mdl,
+			displacement: WorldPositionOffset_mdl,
+			two_sided: true);

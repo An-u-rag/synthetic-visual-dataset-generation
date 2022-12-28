@@ -1,0 +1,40 @@
+#usda 1.0
+(
+    defaultPrim = "Water_Material"
+    upAxis = "Z"
+)
+
+def Material "Water_Material" (
+    assetInfo = {
+        asset identifier = @../../../../../../anuragparcha/Desktop/TestUSD/USDA/Assets/Water/Materials/WaterSurface/Water_Material.usda@
+        string name = "Water_Material"
+    }
+)
+{
+    float inputs:emissiveScale = 0
+    token outputs:surface.connect = </Water_Material/SurfaceShader.outputs:surface>
+    token outputs:unreal:surface.connect = </Water_Material/UnrealShader.outputs:out>
+
+    def Shader "UnrealShader"
+    {
+        uniform token info:implementationSource = "sourceAsset"
+        uniform asset info:unreal:sourceAsset = @/Water/Materials/WaterSurface/Water_Material.Water_Material@
+        token outputs:out
+    }
+
+    def Shader "SurfaceShader"
+    {
+        uniform token info:id = "UsdPreviewSurface"
+        float inputs:ambientOcclusion = 1
+        color3f inputs:diffuseColor = (0.8468732, 0.8468732, 0.8468732)
+        color3f inputs:emissiveColor = (0, 0, 0)
+        float inputs:metallic = 0
+        normal3f inputs:normal = (0, -0, 0)
+        float inputs:opacity = 1
+        float inputs:roughness = 0
+        float inputs:specular = 0.22352941
+        normal3f inputs:tangent = (1, -0.5019608, 0.5019608)
+        token outputs:surface
+    }
+}
+

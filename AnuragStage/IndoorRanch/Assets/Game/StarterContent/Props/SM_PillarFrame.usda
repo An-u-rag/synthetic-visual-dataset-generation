@@ -1,0 +1,29 @@
+#usda 1.0
+(
+    defaultPrim = "SM_PillarFrame"
+    metersPerUnit = 0.009999999776482582
+    upAxis = "Z"
+)
+
+def "SM_PillarFrame" (
+    prepend apiSchemas = ["MaterialBindingAPI"]
+    assetInfo = {
+        asset identifier = @../../../../../../anuragparcha/Desktop/TestUSD/USDA/Assets/Game/StarterContent/Props/SM_PillarFrame.usda@
+        string name = "SM_PillarFrame"
+    }
+    prepend payload = @SM_PillarFrame_payload.usda@
+)
+{
+    rel material:binding = </SM_PillarFrame/Materials/M_Frame>
+    custom string unrealMaterial = "/Game/StarterContent/Props/Materials/M_Frame.M_Frame"
+
+    def Scope "Materials"
+    {
+        def Material "M_Frame" (
+            prepend references = @Materials/M_Frame.usda@
+        )
+        {
+        }
+    }
+}
+
